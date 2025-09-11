@@ -1,7 +1,8 @@
 services:
   # Serviço da API Backend (NestJS)
   backend:
-    image: inf-att-backend
+    image: inf-att-backend-image
+    container_name: inf_att-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -11,14 +12,15 @@ services:
       - ./backend:/app
       - /app/node_modules
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/presencadb?schema=public
+      - DATABASE_URL=postgresql://user:password@db:5432/inf_att_db?schema=public
     depends_on:
       - db
     command: sh -c "npm install && npm run start:dev"
 
   # Serviço da Interface Frontend (React/Vite)
   frontend:
-    image: inf-att-frontend
+    image: inf-att-frontend-image
+    container_name: inf_att-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -27,14 +29,15 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
+ 
   # Serviço do Banco de Dados (PostgreSQL)
   db:
-    image: inf_att-db
+    image: postgres:15
+    container_name: inf_att-db
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=presencadb
+      - POSTGRES_DB=inf_att_db
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
