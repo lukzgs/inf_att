@@ -3,13 +3,7 @@
 
 set -e
 
-echo "[1/3] Instalando dependências do backend..."
-(cd backend && npm install)
-
-echo "[2/3] Instalando dependências do frontend..."
-(cd frontend && npm install)
-
-echo "[3/3] Iniciando containers com Docker Compose em modo detached..."
+echo "[1/1] Iniciando containers com Docker Compose em modo detached..."
 docker-compose up --build -d
 
 # --- Verificação de Status ---
@@ -55,3 +49,4 @@ echo "\nMostrando logs em tempo real (pressione Ctrl+C para sair):"
 
 # Anexa aos logs para visualização em tempo real
 docker-compose logs -f
+
