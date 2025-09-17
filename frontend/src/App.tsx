@@ -1,11 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthHandler } from './contexts/AuthHandler';
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CoursesListPage from './pages/CoursesListPage';
+import CourseFormPage from './pages/CourseFormPage';
 import CoursePage from './pages/CoursePage';
-import MainLayout from './layouts/MainLayout';
-import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 /**
@@ -15,7 +17,6 @@ function RootRedirect() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    // You can replace this with a more sophisticated loading spinner
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
@@ -29,21 +30,31 @@ function RootRedirect() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<RootRedirect />} />
-      
-      {/* Public Route */}
-      <Route path="/login" element={<LoginPage />} />
+    <Router>
+      <AuthProvider>
+        <AuthHandler />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Protected Routes */}
+          <Route 
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="courses" element={<CoursesListPage />} />
+            <Route path="courses/new" element={<CourseFormPage />} />
+            <Route path="courses/:id" element={<CoursePage />} />
+          </Route>
 
-      {/* Protected Routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/courses" element={<CoursesListPage />} />
-          <Route path="/courses/:id" element={<CoursePage />} />
-        </Route>
-      </Route>
-    </Routes>
+          {/* Root redirect handles the "/" path */}
+          <Route path="/" element={<RootRedirect />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
