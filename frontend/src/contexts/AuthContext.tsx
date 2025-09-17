@@ -20,51 +20,49 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // To handle initial load
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-
-    if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      api.get('/auth/profile')
-        .then(response => {
+    const loadUserFromToken = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await api.get<User>('/auth/profile');
           setUser(response.data);
-        })
-        .catch(() => {
-          // Invalid token, clear it
+        } catch (error) {
+          console.error('Failed to fetch profile with stored token:', error);
           localStorage.removeItem('authToken');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else {
+          setUser(null);
+        }
+      }
       setIsLoading(false);
-    }
+    };
+
+    loadUserFromToken();
   }, []);
 
   async function login(receivedToken: string) {
     localStorage.setItem('authToken', receivedToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${receivedToken}`;
     try {
-      const response = await api.get('/auth/profile');
+      const response = await api.get<User>('/auth/profile');
       setUser(response.data);
     } catch (error) {
       console.error("Failed to fetch user profile after login", error);
-      // Handle error case if necessary, maybe logout again
+      localStorage.removeItem('authToken');
+      setUser(null);
     }
   }
 
   function logout() {
     localStorage.removeItem('authToken');
-    setUser(null);
     delete api.defaults.headers.common['Authorization'];
+    setUser(null);
   }
 
-  const isAuthenticated = !!user;
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!user, user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

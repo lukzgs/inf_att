@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
@@ -14,7 +13,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,11 +27,8 @@ export default function LoginPage() {
       });
       
       const token = response.data.access_token;
-      await login(token); // Pass the token to the context
+      await login(token);
       
-      // Redirect to dashboard on successful login
-      navigate('/dashboard');
-
     } catch (err) {
       setError('Falha no login. Verifique suas credenciais.');
       console.error(err);
@@ -43,8 +38,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-full max-w-sm shadow-2xl bg-base-100">
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
+      <div className="card w-full max-w-sm shrink-0 shadow-2xl bg-base-100">
         <form className="card-body" onSubmit={handleSubmit}>
           <h1 className="card-title text-2xl justify-center">Login</h1>
           
