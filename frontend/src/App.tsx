@@ -1,19 +1,60 @@
-import { BackendStatus } from './components/BackendStatus';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthHandler } from './contexts/AuthHandler';
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './layouts/MainLayout';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import CoursesListPage from './pages/CoursesListPage';
+import CourseFormPage from './pages/CourseFormPage';
+import CoursePage from './pages/CoursePage';
 import './App.css';
+
+/**
+ * Handles the root path, redirecting based on auth state or showing a loading indicator.
+ */
+function RootRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  // Navigate to the appropriate page once loading is complete
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
 
 function App() {
   return (
-    <div className="min-h-screen bg-blue-200 flex flex-col items-center justify-center text-white p-4">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-4xl font-bold text-center text-blue-400 mb-4">
-          Tailwind CSS
-        </h1>
-        <p className="text-center text-gray-300 mb-6">
-          Se você está vendo este card estilizado, o Tailwind está funcionando corretamente!
-        </p>
-        <BackendStatus />
-      </div>
-    </div>
+    <Router>
+      <AuthProvider>
+        <AuthHandler />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Protected Routes */}
+          <Route 
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="courses" element={<CoursesListPage />} />
+            <Route path="courses/new" element={<CourseFormPage />} />
+            <Route path="courses/:id" element={<CoursePage />} />
+          </Route>
+
+          {/* Root redirect handles the "/" path */}
+          <Route path="/" element={<RootRedirect />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
