@@ -1,4 +1,4 @@
-import { useCourses } from '../hooks/useCourses'; // Corrected path
+import { useCourses } from '../hooks/useCursos'; // Corrected path
 import Button from '../components/common/Button';
 
 export default function CoursesListPage() {
