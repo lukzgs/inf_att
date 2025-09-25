@@ -6,6 +6,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - ./.env
     ports:
       - "3000:3000"
     volumes:
@@ -24,11 +26,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: build
     ports:
-      - "8080:80"
+      - "8080:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    command: sh -c "npm install && npm run dev"
  
   # Serviço do Banco de Dados (PostgreSQL)
   db:
