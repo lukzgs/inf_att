@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useContext, type ReactNode, useCallback, useMemo } from 'react';
 import { api } from '../services/api';
 
 interface User {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUserFromToken();
   }, []);
 
-  async function login(receivedToken: string) {
+  const login = useCallback(async (receivedToken: string) => {
     localStorage.setItem('authToken', receivedToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${receivedToken}`;
     try {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('authToken');
       setUser(null);
     }
-  }
+  }, []);
 
   function logout() {
     localStorage.removeItem('authToken');
@@ -61,8 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  const authContextValue = useMemo(() => ({
+    isAuthenticated: !!user,
+    user,
+    isLoading,
+    login,
+    logout,
+  }), [user, isLoading, login]);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user, isLoading, login, logout }}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
