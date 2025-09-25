@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import CoursesListPage from './pages/CoursesListPage';
 import CourseFormPage from './pages/CourseFormPage';
 import CoursePage from './pages/CoursePage';
+import TurmasListPage from './pages/TurmasListPage';
 import './App.css';
 
 /**
@@ -39,7 +40,7 @@ function App() {
           {/* Protected Routes */}
           <Route 
             element={
-              <ProtectedRoute roles={['ADMIN']}>
+              <ProtectedRoute roles={['ADMIN', 'PROFESSOR', 'USER', 'STUDENT']}>
                 <MainLayout />
               </ProtectedRoute>
             }
@@ -48,6 +49,7 @@ function App() {
             <Route path="courses" element={<CoursesListPage />} />
             <Route path="courses/new" element={<CourseFormPage />} />
             <Route path="courses/:id" element={<CoursePage />} />
+            <Route path="turmas" element={<TurmasListPage />} />
           </Route>
 
           {/* Root redirect handles the "/" path */}
