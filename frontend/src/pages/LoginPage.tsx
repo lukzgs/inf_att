@@ -126,25 +126,16 @@ export default function LoginPage() {
       {/* Right Side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
-              <FiCalendar className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold text-base-content">INF Attendance</h1>
-            <p className="text-base-content/60 text-sm mt-1">Sistema de Gestão Acadêmica</p>
-          </div>
-
           {/* Login Card */}
           <div className="relative">
-            {/* Subtle gradient glow */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[2rem] blur-sm opacity-30"></div>
+            {/* Subtle gradient glow matching left side */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-[2rem] blur-sm opacity-30"></div>
             
             <div className="relative bg-white dark:bg-base-100 shadow-[0_20px_70px_rgba(0,0,0,0.15)] rounded-[2rem] overflow-hidden border border-gray-200 dark:border-base-300">
               <div className="p-8 sm:p-12">
                 {/* Header */}
                 <div className="text-center mb-10">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-6 shadow-lg">
                     <FiLock className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
@@ -173,7 +164,7 @@ export default function LoginPage() {
                         className={`w-full pl-12 pr-4 py-4 text-base bg-gray-50 dark:bg-base-200 border-2 rounded-xl transition-all duration-200 ${
                           errors.email 
                             ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20' 
-                            : 'border-gray-200 dark:border-base-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-base-100'
+                            : 'border-gray-200 dark:border-base-300 focus:border-primary focus:ring-4 focus:ring-primary/20 focus:bg-white dark:focus:bg-base-100'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                         disabled={isSubmitting}
                         {...register('email')}
@@ -206,7 +197,7 @@ export default function LoginPage() {
                         className={`w-full pl-12 pr-4 py-4 text-base bg-gray-50 dark:bg-base-200 border-2 rounded-xl transition-all duration-200 ${
                           errors.password 
                             ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20' 
-                            : 'border-gray-200 dark:border-base-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-base-100'
+                            : 'border-gray-200 dark:border-base-300 focus:border-primary focus:ring-4 focus:ring-primary/20 focus:bg-white dark:focus:bg-base-100'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                         disabled={isSubmitting}
                         {...register('password')}
@@ -227,7 +218,7 @@ export default function LoginPage() {
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <input 
                         type="checkbox" 
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        className="checkbox checkbox-primary checkbox-sm"
                       />
                       <span className="text-sm font-medium text-gray-700 dark:text-base-content/80 group-hover:text-gray-900 dark:group-hover:text-base-content transition-colors">
                         Lembrar-me
@@ -235,7 +226,7 @@ export default function LoginPage() {
                     </label>
                     <a 
                       href="#" 
-                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+                      className="text-sm font-semibold text-primary hover:text-primary-focus transition-colors"
                     >
                       Esqueceu a senha?
                     </a>
@@ -270,7 +261,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 px-6 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                    className="w-full py-4 px-6 text-base font-semibold text-white bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-primary/50"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-3">
@@ -304,7 +295,7 @@ export default function LoginPage() {
                     Não tem uma conta?{' '}
                     <a 
                       href="#" 
-                      className="font-semibold text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+                      className="font-semibold text-primary hover:text-primary-focus transition-colors"
                     >
                       Solicitar acesso
                     </a>
@@ -320,7 +311,7 @@ export default function LoginPage() {
               Problemas para acessar?{' '}
               <a 
                 href="#" 
-                className="font-medium text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+                className="font-medium text-primary hover:text-primary-focus transition-colors"
               >
                 Entre em contato
               </a>
