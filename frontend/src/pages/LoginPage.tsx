@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
 
 // Define the shape of the login response
 interface LoginResponse {
@@ -48,76 +47,93 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-base-200 p-4">
-      <div className="w-full max-w-md bg-base-100 p-6 sm:p-8 rounded-lg shadow-lg">
-        <div className="mb-6 sm:mb-8 text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter">
-            INF Attendance
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-base-content/70">
-            Por favor, faça login na sua conta
-          </p>
-        </div>
+      <div className="card w-full max-w-md bg-base-100 shadow-xl">
+        <div className="card-body p-6 sm:p-8">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              INF Attendance
+            </h1>
+            <p className="mt-2 text-sm sm:text-base text-base-content/70">
+              Por favor, faça login na sua conta
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
-            <Input
+          {/* Email Field */}
+          <div className="form-control">
+            <label htmlFor="email" className="label">
+              <span className="label-text font-medium">Email</span>
+            </label>
+            <input
               id="email"
               type="email"
               placeholder="seu@email.com"
+              className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`}
               {...register('email')}
-              className={errors.email ? 'border-error' : ''}
             />
             {errors.email && (
-              <p className="text-sm text-error">{errors.email.message}</p>
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.email.message}</span>
+              </label>
             )}
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium">Senha</label>
-              <a href="#" className="text-xs sm:text-sm text-primary hover:underline">
-                Esqueceu sua senha?
+          {/* Password Field */}
+          <div className="form-control">
+            <label htmlFor="password" className="label">
+              <span className="label-text font-medium">Senha</span>
+              <a href="#" className="label-text-alt link link-hover link-primary">
+                Esqueceu a senha?
               </a>
-            </div>
-            <Input
+            </label>
+            <input
               id="password"
               type="password"
               placeholder="••••••••"
+              className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
               {...register('password')}
-              className={errors.password ? 'border-error' : ''}
             />
             {errors.password && (
-              <p className="text-sm text-error">
-                {errors.password.message}
-              </p>
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.password.message}</span>
+              </label>
             )}
           </div>
 
           {errors.root?.serverError && (
-            <div className="alert alert-error py-3">
+            <div className="alert alert-error">
+              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               <span className="text-sm">{errors.root.serverError.message}</span>
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <span className="loading loading-spinner loading-sm"></span>
-            ) : (
-              'Entrar'
-            )}
-          </Button>
+          {/* Submit Button */}
+          <div className="form-control mt-6">
+            <Button 
+              type="submit" 
+              size="block"
+              loading={isSubmitting}
+            >
+              Entrar
+            </Button>
+          </div>
         </form>
 
-        <div className="mt-6 text-center">
+        {/* Footer */}
+        <div className="divider"></div>
+        <div className="text-center">
           <p className="text-xs sm:text-sm text-base-content/60">
             Não tem uma conta?{' '}
-            <a href="#" className="text-primary hover:underline font-medium">
+            <a href="#" className="link link-primary font-medium">
               Solicitar acesso
             </a>
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }
