@@ -137,171 +137,175 @@ export default function LoginPage() {
 
           {/* Login Card */}
           <div className="relative">
-            {/* Card with gradient border effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-3xl blur opacity-20"></div>
-            <div className="relative card bg-base-100 shadow-2xl rounded-3xl overflow-hidden">
-              <div className="card-body p-10 sm:p-12">
-                {/* Header with accent line */}
+            {/* Subtle gradient glow */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[2rem] blur-sm opacity-30"></div>
+            
+            <div className="relative bg-white dark:bg-base-100 shadow-[0_20px_70px_rgba(0,0,0,0.15)] rounded-[2rem] overflow-hidden border border-gray-200 dark:border-base-300">
+              <div className="p-8 sm:p-12">
+                {/* Header */}
                 <div className="text-center mb-10">
-                  <div className="inline-block p-3 bg-primary/10 rounded-2xl mb-4">
-                    <FiLock className="w-8 h-8 text-primary" />
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
+                    <FiLock className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-4xl sm:text-5xl font-extrabold text-base-content mb-4 tracking-tight">
-                    Bem-vindo de volta
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                    INF Attendance
                   </h2>
-                  <p className="text-lg text-base-content/70 font-medium">
-                    Entre com suas credenciais para acessar
+                  <p className="text-base text-gray-600 dark:text-base-content/70">
+                    Faça login para continuar
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   {/* Email Field */}
                   <div className="form-control">
-                    <label htmlFor="email" className="label pb-3">
-                      <span className="label-text font-bold text-base uppercase tracking-wide text-base-content/80">
-                        Email Institucional
-                      </span>
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-base-content mb-2">
+                      Email
                     </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-all duration-300">
-                        <div className="p-2 rounded-lg bg-base-200 group-focus-within:bg-primary/10 transition-colors">
-                          <FiMail className="h-5 w-5 text-base-content/50 group-focus-within:text-primary transition-colors" />
-                        </div>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <FiMail className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="email"
                         type="email"
-                        placeholder="seu.nome@inf.ufrgs.br"
-                        className={`input w-full pl-[4.5rem] pr-5 h-16 text-lg font-medium rounded-2xl transition-all duration-300 ${
+                        placeholder="seu.email@inf.ufrgs.br"
+                        autoComplete="email"
+                        className={`w-full pl-12 pr-4 py-4 text-base bg-gray-50 dark:bg-base-200 border-2 rounded-xl transition-all duration-200 ${
                           errors.email 
-                            ? 'border-2 border-error bg-error/5 focus:border-error focus:ring-4 focus:ring-error/20' 
-                            : 'border-2 border-base-300 bg-base-200/50 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-base-100'
-                        }`}
+                            ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20' 
+                            : 'border-gray-200 dark:border-base-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-base-100'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                         disabled={isSubmitting}
                         {...register('email')}
                       />
                     </div>
                     {errors.email && (
-                      <label className="label pt-3">
-                        <span className="label-text-alt text-error font-semibold flex items-center gap-2 text-base">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          {errors.email.message}
-                        </span>
-                      </label>
+                      <p className="mt-2 text-sm text-red-600 dark:text-error flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {errors.email.message}
+                      </p>
                     )}
                   </div>
 
                   {/* Password Field */}
                   <div className="form-control">
-                    <label htmlFor="password" className="label pb-3">
-                      <span className="label-text font-bold text-base uppercase tracking-wide text-base-content/80">
-                        Senha
-                      </span>
+                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-base-content mb-2">
+                      Senha
                     </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-all duration-300">
-                        <div className="p-2 rounded-lg bg-base-200 group-focus-within:bg-primary/10 transition-colors">
-                          <FiLock className="h-5 w-5 text-base-content/50 group-focus-within:text-primary transition-colors" />
-                        </div>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <FiLock className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="password"
                         type="password"
                         placeholder="••••••••"
-                        className={`input w-full pl-[4.5rem] pr-5 h-16 text-lg font-medium rounded-2xl transition-all duration-300 ${
+                        autoComplete="current-password"
+                        className={`w-full pl-12 pr-4 py-4 text-base bg-gray-50 dark:bg-base-200 border-2 rounded-xl transition-all duration-200 ${
                           errors.password 
-                            ? 'border-2 border-error bg-error/5 focus:border-error focus:ring-4 focus:ring-error/20' 
-                            : 'border-2 border-base-300 bg-base-200/50 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-base-100'
-                        }`}
+                            ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20' 
+                            : 'border-gray-200 dark:border-base-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-base-100'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                         disabled={isSubmitting}
                         {...register('password')}
                       />
                     </div>
                     {errors.password && (
-                      <label className="label pt-3">
-                        <span className="label-text-alt text-error font-semibold flex items-center gap-2 text-base">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          {errors.password.message}
-                        </span>
-                      </label>
+                      <p className="mt-2 text-sm text-red-600 dark:text-error flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {errors.password.message}
+                      </p>
                     )}
                   </div>
 
                   {/* Remember Me & Forgot Password */}
-                  <div className="flex items-center justify-between pt-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input type="checkbox" className="checkbox checkbox-primary checkbox-md" />
-                      <span className="text-base font-semibold text-base-content/70 group-hover:text-base-content transition-colors">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-base-content/80 group-hover:text-gray-900 dark:group-hover:text-base-content transition-colors">
                         Lembrar-me
                       </span>
                     </label>
-                    <a href="#" className="text-base font-bold text-primary hover:text-primary-focus hover:underline transition-all">
+                    <a 
+                      href="#" 
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+                    >
                       Esqueceu a senha?
                     </a>
                   </div>
 
                   {/* Error Alert */}
                   {errors.root?.serverError && (
-                    <div className="alert alert-error shadow-xl rounded-2xl border-2 border-error">
+                    <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-error/10 border-l-4 border-red-500 dark:border-error rounded-lg">
                       <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="stroke-current shrink-0 h-7 w-7"
-                        fill="none"
-                        viewBox="0 0 24 24"
+                        className="w-5 h-5 text-red-500 dark:text-error flex-shrink-0 mt-0.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
                       >
                         <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-base font-bold">{errors.root.serverError.message}</span>
+                      <div>
+                        <p className="text-sm font-semibold text-red-800 dark:text-error">
+                          Erro ao fazer login
+                        </p>
+                        <p className="text-sm text-red-700 dark:text-error/80 mt-1">
+                          {errors.root.serverError.message}
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {/* Submit Button */}
-                  <div className="form-control mt-8">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="btn btn-primary h-16 text-xl font-black rounded-2xl shadow-2xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group"
-                    >
-                      <span className="relative z-10">
-                        {isSubmitting ? (
-                          <span className="flex items-center gap-3">
-                            <span className="loading loading-spinner loading-md"></span>
-                            Entrando no sistema...
-                          </span>
-                        ) : (
-                          'Entrar no sistema'
-                        )}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 px-6 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center gap-3">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Entrando...
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary-focus to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </button>
-                  </div>
+                    ) : (
+                      'Entrar'
+                    )}
+                  </button>
                 </form>
 
-                {/* Footer */}
+                {/* Divider */}
                 <div className="relative my-8">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t-2 border-base-300"></div>
+                    <div className="w-full border-t border-gray-200 dark:border-base-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-base-100 text-base-content/50 font-bold uppercase tracking-wider">
+                    <span className="px-4 bg-white dark:bg-base-100 text-gray-500 dark:text-base-content/60 font-medium">
                       Ou
                     </span>
                   </div>
                 </div>
                 
+                {/* Footer */}
                 <div className="text-center">
-                  <p className="text-lg text-base-content/80 font-medium">
+                  <p className="text-sm text-gray-600 dark:text-base-content/70">
                     Não tem uma conta?{' '}
-                    <a href="#" className="font-black text-primary hover:text-primary-focus hover:underline transition-all text-xl">
+                    <a 
+                      href="#" 
+                      className="font-semibold text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+                    >
                       Solicitar acesso
                     </a>
                   </p>
@@ -311,11 +315,14 @@ export default function LoginPage() {
           </div>
 
           {/* Help Text */}
-          <div className="mt-10 text-center">
-            <p className="text-base text-base-content/70 font-medium">
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600 dark:text-base-content/60">
               Problemas para acessar?{' '}
-              <a href="#" className="font-bold text-primary hover:text-primary-focus hover:underline transition-all">
-                Entre em contato com o suporte
+              <a 
+                href="#" 
+                className="font-medium text-blue-600 hover:text-blue-700 dark:text-primary dark:hover:text-primary-focus transition-colors"
+              >
+                Entre em contato
               </a>
             </p>
           </div>
