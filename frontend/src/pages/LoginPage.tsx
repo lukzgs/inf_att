@@ -47,36 +47,36 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-200">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+    <div className="min-h-screen w-full flex items-center justify-center bg-base-200 p-4">
+      <div className="w-full max-w-md bg-base-100 p-6 sm:p-8 rounded-lg shadow-lg">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter">
             INF Attendance
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-sm sm:text-base text-base-content/70">
             Por favor, faça login na sua conta
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
             <Input
               id="email"
               type="email"
               placeholder="seu@email.com"
               {...register('email')}
-              className={errors.email ? 'border-destructive' : ''}
+              className={errors.email ? 'border-error' : ''}
             />
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="text-sm text-error">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="password">Senha</label>
-              <a href="#" className="text-sm text-primary hover:underline">
+              <label htmlFor="password" className="text-sm font-medium">Senha</label>
+              <a href="#" className="text-xs sm:text-sm text-primary hover:underline">
                 Esqueceu sua senha?
               </a>
             </div>
@@ -85,29 +85,38 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               {...register('password')}
-              className={errors.password ? 'border-destructive' : ''}
+              className={errors.password ? 'border-error' : ''}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-error">
                 {errors.password.message}
               </p>
             )}
           </div>
 
           {errors.root?.serverError && (
-            <p className="text-sm text-destructive text-center">
-              {errors.root.serverError.message}
-            </p>
+            <div className="alert alert-error py-3">
+              <span className="text-sm">{errors.root.serverError.message}</span>
+            </div>
           )}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
-              <span className="loading loading-spinner"></span>
+              <span className="loading loading-spinner loading-sm"></span>
             ) : (
-              'Login'
+              'Entrar'
             )}
           </Button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-xs sm:text-sm text-base-content/60">
+            Não tem uma conta?{' '}
+            <a href="#" className="text-primary hover:underline font-medium">
+              Solicitar acesso
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

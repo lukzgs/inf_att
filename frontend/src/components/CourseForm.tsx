@@ -69,19 +69,19 @@ export default function CourseForm({ initialData, onSuccess }: CourseFormProps) 
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto">
-      <form onSubmit={handleSubmit} className="card-body">
-        <h2 className="card-title text-2xl justify-center mb-4">
-          {initialData ? 'Edit Course' : 'Create New Course'}
+    <div className="w-full">
+      <form onSubmit={handleSubmit} className="card-body p-4 sm:p-6">
+        <h2 className="card-title text-xl sm:text-2xl justify-center mb-4 sm:mb-6">
+          {initialData ? 'Editar Curso' : 'Criar Novo Curso'}
         </h2>
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Course Name</span>
+            <span className="label-text font-medium">Nome do Curso</span>
           </label>
           <input
             type="text"
-            placeholder="e.g., Introduction to Programming"
+            placeholder="ex: Introdução à Programação"
             className="input input-bordered w-full"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -91,29 +91,50 @@ export default function CourseForm({ initialData, onSuccess }: CourseFormProps) 
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Description</span>
+            <span className="label-text font-medium">Descrição</span>
           </label>
           <textarea
-            placeholder="e.g., Learn the basics of programming with Python."
-            className="textarea textarea-bordered h-24 w-full"
+            placeholder="ex: Aprenda os fundamentos da programação com Python."
+            className="textarea textarea-bordered h-24 sm:h-32 w-full resize-none"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           ></textarea>
         </div>
 
-        {error && <div className="text-error text-sm text-center mt-4">{error}</div>}
-        {mutation.isError && <div className="text-error text-sm text-center mt-4">{mutation.error.message}</div>}
+        {error && (
+          <div className="alert alert-error py-3 text-sm">
+            <span>{error}</span>
+          </div>
+        )}
+        {mutation.isError && (
+          <div className="alert alert-error py-3 text-sm">
+            <span>{mutation.error.message}</span>
+          </div>
+        )}
 
-        <div className="form-control mt-6">
-          <button type="submit" className="btn btn-primary" disabled={mutation.isPending}>
+        <div className="form-control mt-6 gap-3">
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={mutation.isPending}
+          >
             {mutation.isPending ? (
-              <span className="loading loading-spinner"></span>
+              <span className="loading loading-spinner loading-sm"></span>
             ) : initialData ? (
-              'Update Course'
+              'Atualizar Curso'
             ) : (
-              'Create Course'
+              'Criar Curso'
             )}
+          </button>
+          
+          <button 
+            type="button" 
+            className="btn btn-ghost"
+            onClick={() => navigate('/courses')}
+            disabled={mutation.isPending}
+          >
+            Cancelar
           </button>
         </div>
       </form>

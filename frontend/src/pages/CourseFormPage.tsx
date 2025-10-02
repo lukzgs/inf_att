@@ -30,7 +30,7 @@ export default function CourseFormPage() {
 
   if (id && isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[50vh] flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
@@ -38,15 +38,18 @@ export default function CourseFormPage() {
 
   if (id && isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-error">
-        Error loading course: {error?.message}
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-error text-lg font-semibold">Erro ao carregar curso</p>
+          <p className="text-base-content/70 mt-2">{error?.message}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-full max-w-lg shadow-2xl bg-base-100">
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="card shadow-lg bg-base-100 border border-base-300">
         <CourseForm initialData={id ? course : undefined} onSuccess={handleSuccess} />
       </div>
     </div>
