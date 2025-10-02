@@ -1,27 +1,45 @@
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useCourses } from '../hooks/useCursos';
+import { api } from '../services/api';
 import { Button } from '../components/common/Button';
-import { FiEdit2, FiPlus } from 'react-icons/fi';
+import { ListPageSkeleton } from '../components/common/Skeleton';
+import { EmptyListState, ErrorState } from '../components/common/EmptyState';
+import { useConfirmDialog } from '../components/common/ConfirmDialog';
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 export default function CoursesListPage() {
-  const { data: courses, isLoading, isError, error } = useCourses();
+  const { data: courses, isLoading, isError, error, refetch } = useCourses();
+  const { confirmDialog, confirm } = useConfirmDialog();
+
+  const handleDelete = async (courseId: number, courseName: string) => {
+    const confirmed = await confirm({
+      title: 'Deletar curso?',
+      description: `Tem certeza que deseja deletar o curso "${courseName}"? Esta ação não pode ser desfeita.`,
+      variant: 'danger',
+      confirmText: 'Deletar',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        await api.delete(`/cursos/${courseId}`);
+      },
+    });
+
+    if (confirmed) {
+      toast.success('Curso deletado com sucesso!');
+      refetch(); // Recarrega a lista
+    }
+  };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
+    return <ListPageSkeleton />;
   }
 
   if (isError) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <p className="text-error text-lg font-semibold">Erro ao carregar cursos</p>
-          <p className="text-base-content/70 mt-2">{error?.message}</p>
-        </div>
-      </div>
+      <ErrorState 
+        message={error?.message} 
+        onRetry={() => refetch()}
+      />
     );
   }
 
@@ -59,12 +77,22 @@ export default function CoursesListPage() {
                     <td className="font-medium">{course.name}</td>
                     <td className="text-base-content/70">{course.description}</td>
                     <td className="text-right">
-                      <Button asChild variant="ghost" size="sm">
-                        <Link to={`/courses/${course.id}`} className="flex items-center justify-end gap-2">
-                          <FiEdit2 size={16} />
-                          Editar
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button asChild variant="ghost" size="sm">
+                          <Link to={`/courses/${course.id}`} className="flex items-center gap-1">
+                            <FiEdit2 size={16} />
+                            Editar
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(course.id, course.name)}
+                          className="text-error hover:bg-error/10"
+                        >
+                          <FiTrash2 size={16} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -84,15 +112,26 @@ export default function CoursesListPage() {
                     <h3 className="font-semibold text-lg truncate">{course.name}</h3>
                     <p className="text-xs text-base-content/50 font-mono">ID: {course.id}</p>
                   </div>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link 
-                      to={`/courses/${course.id}`}
-                      className="flex items-center gap-1 flex-shrink-0"
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link 
+                        to={`/courses/${course.id}`}
+                        className="flex items-center gap-1"
+                      >
+                        <FiEdit2 size={16} />
+                        <span className="text-xs">Editar</span>
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDelete(course.id, course.name)}
+                      className="text-error hover:bg-error/10"
+                      aria-label="Deletar curso"
                     >
-                      <FiEdit2 size={16} />
-                      <span className="text-xs">Editar</span>
-                    </Link>
-                  </Button>
+                      <FiTrash2 size={16} />
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm text-base-content/70 line-clamp-2">
                   {course.description}
@@ -102,24 +141,14 @@ export default function CoursesListPage() {
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center py-12 px-4">
-          <div className="text-center max-w-sm">
-            <div className="text-6xl mb-4">📚</div>
-            <h3 className="text-lg font-semibold mb-2">Nenhum curso encontrado</h3>
-            <p className="text-base-content/70 mb-6">
-              Comece adicionando seu primeiro curso para gerenciar.
-            </p>
-            <Button asChild>
-              <Link to="/courses/new" className="flex items-center gap-2">
-                <FiPlus size={18} />
-                Adicionar Primeiro Curso
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <EmptyListState 
+          entityName="curso" 
+          onAdd={() => window.location.href = '/courses/new'}
+        />
       )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog}
     </div>
   );
 }
-
-

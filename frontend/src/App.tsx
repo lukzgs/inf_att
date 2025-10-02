@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthHandler } from './contexts/AuthHandler';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,6 +35,14 @@ function App() {
     <Router>
       <AuthProvider>
         <AuthHandler />
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton
+          toastOptions={{
+            className: 'toast-custom',
+          }}
+        />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           

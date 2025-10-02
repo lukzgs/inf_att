@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/common/Button';
@@ -36,10 +37,16 @@ export default function LoginPage() {
       const response = await api.post<LoginResponse>('/auth/login', data);
       const token = response.data.access_token;
       await login(token);
+      toast.success('Login realizado com sucesso!', {
+        description: 'Você será redirecionado...',
+      });
     } catch (err) {
       setError('root.serverError', {
         type: 'manual',
         message: 'Falha no login. Verifique suas credenciais.',
+      });
+      toast.error('Falha no login', {
+        description: 'Verifique suas credenciais e tente novamente.',
       });
       console.error(err);
     }
