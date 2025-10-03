@@ -37,9 +37,7 @@ export default function LoginPage() {
       const response = await api.post<LoginResponse>('/auth/login', data);
       const token = response.data.access_token;
       await login(token);
-      toast.success('Login realizado com sucesso!', {
-        description: 'Você será redirecionado...',
-      });
+      toast.success('Login realizado com sucesso!');
     } catch (err) {
       setError('root.serverError', {
         type: 'manual',
@@ -128,14 +126,11 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="relative">
-            {/* Subtle gradient glow matching left side */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-[2rem] blur-sm opacity-30"></div>
-            
             <div className="relative bg-white dark:bg-base-100 shadow-[0_20px_70px_rgba(0,0,0,0.15)] rounded-[2rem] overflow-hidden border border-gray-200 dark:border-base-300">
               <div className="p-8 sm:p-12">
                 {/* Header */}
                 <div className="text-center mb-10">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mb-6 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-6 shadow-lg">
                     <FiLock className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
@@ -261,7 +256,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 px-6 text-base font-semibold text-white bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-primary/50"
+                    className="w-full py-4 px-6 text-base font-semibold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-primary/50"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-3">
