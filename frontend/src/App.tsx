@@ -9,7 +9,16 @@ import DashboardPage from './pages/DashboardPage';
 import CoursesListPage from './pages/CoursesListPage';
 import CourseFormPage from './pages/CourseFormPage';
 import CoursePage from './pages/CoursePage';
-import TurmasListPage from './pages/TurmasListPage';
+import UsuariosListPage from './pages/admin/usuarios/UsuariosListPage';
+import UsuarioFormPage from './pages/admin/usuarios/UsuarioFormPage';
+import DisciplinasListPage from './pages/admin/disciplinas/DisciplinasListPage';
+import DisciplinaFormPage from './pages/admin/disciplinas/DisciplinaFormPage';
+import TurmasListPage from './pages/admin/turmas/TurmasListPage';
+import TurmaFormPage from './pages/admin/turmas/TurmaFormPage';
+import AulasListPage from './pages/admin/aulas/AulasListPage';
+import AulaFormPage from './pages/admin/aulas/AulaFormPage';
+import PresencasListPage from './pages/admin/presencas/PresencasListPage';
+import PresencaFormPage from './pages/admin/presencas/PresencaFormPage';
 import './App.css';
 
 /**
@@ -36,11 +45,16 @@ function App() {
       <AuthProvider>
         <AuthHandler />
         <Toaster 
-          position="top-right" 
+          position="bottom-center" 
           richColors 
           closeButton
+          expand={true}
           toastOptions={{
             className: 'toast-custom',
+            style: {
+              minWidth: '320px',
+              maxWidth: '500px',
+            },
           }}
         />
         <Routes>
@@ -58,7 +72,31 @@ function App() {
             <Route path="courses" element={<CoursesListPage />} />
             <Route path="courses/new" element={<CourseFormPage />} />
             <Route path="courses/:id" element={<CoursePage />} />
-            <Route path="turmas" element={<TurmasListPage />} />
+            
+            {/* Admin Routes - Usuários */}
+            <Route path="admin/usuarios" element={<UsuariosListPage />} />
+            <Route path="admin/usuarios/novo" element={<UsuarioFormPage />} />
+            <Route path="admin/usuarios/:id/editar" element={<UsuarioFormPage />} />
+            
+            {/* Admin Routes - Disciplinas */}
+            <Route path="admin/disciplinas" element={<DisciplinasListPage />} />
+            <Route path="admin/disciplinas/novo" element={<DisciplinaFormPage />} />
+            <Route path="admin/disciplinas/:id/editar" element={<DisciplinaFormPage />} />
+            
+            {/* Admin Routes - Turmas */}
+            <Route path="admin/turmas" element={<TurmasListPage />} />
+            <Route path="admin/turmas/novo" element={<TurmaFormPage />} />
+            <Route path="admin/turmas/:id/editar" element={<TurmaFormPage />} />
+            
+            {/* Admin Routes - Aulas */}
+            <Route path="admin/aulas" element={<AulasListPage />} />
+            <Route path="admin/aulas/novo" element={<AulaFormPage />} />
+            <Route path="admin/aulas/:id/editar" element={<AulaFormPage />} />
+            
+            {/* Admin Routes - Presencas */}
+            <Route path="admin/presencas" element={<PresencasListPage />} />
+            <Route path="admin/presencas/novo" element={<PresencaFormPage />} />
+            <Route path="admin/presencas/:lessonId/:userId/editar" element={<PresencaFormPage />} />
           </Route>
 
           {/* Root redirect handles the "/" path */}

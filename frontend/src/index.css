@@ -1,3 +1,9 @@
+/* Import Card System */
+@import './styles/card-system.css';
+
+/* Import Premium Design System */
+@import './styles/premium-design.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
