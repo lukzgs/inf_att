@@ -1,0 +1,169 @@
+/**
+ * Sistema de Cards Premium
+ * Estilos consistentes inspirados no LoginPage para uso em todo o aplicativo
+ */
+
+/* Card Premium Base */
+.premium-card {
+  @apply relative bg-white dark:bg-base-100 shadow-[0_20px_70px_rgba(0,0,0,0.15)] 
+         rounded-[2rem] overflow-hidden border border-gray-200 dark:border-base-300;
+}
+
+/* Gradient Glow Effect */
+.gradient-glow {
+  @apply absolute -inset-0.5 bg-primary 
+         rounded-[2rem] blur-sm opacity-30;
+}
+
+/* Card Container com Glow */
+.premium-card-wrapper {
+  @apply relative;
+}
+
+/* Card Body com padding adequado */
+.premium-card-body {
+  @apply p-6 sm:p-8 lg:p-10;
+}
+
+/* Card Header - Para títulos de seções */
+.premium-card-header {
+  @apply mb-6 sm:mb-8;
+}
+
+.premium-card-header h2 {
+  @apply text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2;
+}
+
+.premium-card-header p {
+  @apply text-base text-gray-600 dark:text-gray-400;
+}
+
+/* Stat Card Premium - Para métricas e estatísticas */
+.stat-card-premium {
+  @apply relative;
+}
+
+.stat-card-premium-inner {
+  @apply relative bg-white dark:bg-base-100
+         shadow-lg hover:shadow-xl rounded-2xl border border-gray-200 dark:border-base-300
+         p-6 transition-all duration-300 hover:scale-[1.02] cursor-default;
+}
+
+/* Icon Container para Stat Cards */
+.stat-card-icon {
+  @apply w-14 h-14 sm:w-16 sm:h-16 bg-primary
+         rounded-xl flex items-center justify-center shadow-lg mb-4;
+}
+
+.stat-card-icon svg {
+  @apply w-7 h-7 sm:w-8 sm:h-8 text-white;
+}
+
+/* Stat Card Values */
+.stat-card-value {
+  @apply text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-1;
+}
+
+.stat-card-label {
+  @apply text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400;
+}
+
+/* Action Cards - Para botões/ações principais */
+.action-card {
+  @apply relative bg-primary
+         rounded-2xl p-6 shadow-lg hover:shadow-xl
+         transition-all duration-300 hover:scale-[1.02]
+         cursor-pointer;
+}
+
+.action-card-content {
+  @apply relative z-10 text-white;
+}
+
+.action-card-icon {
+  @apply w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl
+         flex items-center justify-center mb-4
+         group-hover:bg-white/30 transition-colors;
+}
+
+.action-card-title {
+  @apply text-lg font-bold mb-2;
+}
+
+.action-card-description {
+  @apply text-sm text-white/90;
+}
+
+/* List Card - Para listas de items */
+.list-card {
+  @apply premium-card;
+}
+
+.list-card-item {
+  @apply flex items-center gap-4 p-4 
+         border-b border-gray-100 dark:border-base-300 last:border-0
+         hover:bg-gray-50 dark:hover:bg-base-200 transition-colors
+         rounded-lg;
+}
+
+/* Empty State Card */
+.empty-state-card {
+  @apply premium-card;
+}
+
+.empty-state-content {
+  @apply flex flex-col items-center justify-center py-12 text-center;
+}
+
+.empty-state-icon {
+  @apply text-6xl sm:text-7xl mb-4 opacity-50;
+}
+
+.empty-state-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-white mb-2;
+}
+
+.empty-state-description {
+  @apply text-sm text-gray-600 dark:text-gray-400 max-w-md;
+}
+
+/* Feature Card - Para highlights de funcionalidades */
+.feature-card {
+  @apply flex items-start gap-4 p-5 
+         bg-white dark:bg-base-100
+         border border-gray-200 dark:border-base-300
+         rounded-2xl shadow-md hover:shadow-lg
+         transition-all duration-300 hover:scale-[1.01];
+}
+
+.feature-card-icon {
+  @apply w-12 h-12 bg-primary/10 backdrop-blur-sm rounded-xl
+         flex items-center justify-center flex-shrink-0;
+}
+
+.feature-card-icon svg {
+  @apply w-6 h-6 text-primary;
+}
+
+.feature-card-content h3 {
+  @apply font-bold text-base sm:text-lg mb-1 text-gray-900 dark:text-white;
+}
+
+.feature-card-content p {
+  @apply text-sm text-gray-600 dark:text-gray-400 leading-relaxed;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .premium-card-body {
+    @apply p-4 sm:p-6;
+  }
+  
+  .stat-card-icon {
+    @apply w-12 h-12;
+  }
+  
+  .stat-card-value {
+    @apply text-2xl;
+  }
+}
