@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useStudentClasses, useStudentOverallStats } from '@/hooks/useStudentClasses';
 import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
 import { PresenceRegistrationModal } from '../attendance/PresenceRegistrationModal';
+import { LowFrequencyAlert } from './LowFrequencyAlert';
 import { formatPercentage } from '@/utils/format/formatPercentage';
 import { formatNameToDisplay } from '@/utils/format/formatName';
 
@@ -106,8 +107,15 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+      {/* Low Frequency Alert */}
+      {classes && classes.length > 0 && (
+        <LowFrequencyAlert 
+          classes={classes.filter(c => c.attendancePercentage < 80)} 
+        />
+      )}
+
       {/* My Classes */}
-      <div>
+      <div id="minhas-disciplinas">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             Minhas Disciplinas
