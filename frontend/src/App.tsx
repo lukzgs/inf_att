@@ -19,6 +19,7 @@ import AulasListPage from './pages/admin/aulas/AulasListPage';
 import AulaFormPage from './pages/admin/aulas/AulaFormPage';
 import PresencasListPage from './pages/admin/presencas/PresencasListPage';
 import PresencaFormPage from './pages/admin/presencas/PresencaFormPage';
+import SubjectDetailPage from './features/student/subjects/SubjectDetailPage';
 import './App.css';
 
 /**
@@ -72,6 +73,9 @@ function App() {
             <Route path="courses" element={<CoursesListPage />} />
             <Route path="courses/new" element={<CourseFormPage />} />
             <Route path="courses/:id" element={<CoursePage />} />
+            
+            {/* Student Routes */}
+            <Route path="student/subjects/:id" element={<SubjectDetailPage />} />
             
             {/* Admin Routes - Usuários */}
             <Route path="admin/usuarios" element={<UsuariosListPage />} />
