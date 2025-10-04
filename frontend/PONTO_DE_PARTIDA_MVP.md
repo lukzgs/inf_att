@@ -804,59 +804,305 @@ interface FrequencyBarProps {
 
 ---
 
-### **Fase 2: Features do Aluno (1 semana)**
+## 📅 CRONOGRAMA ATUALIZADO (03/10/2025)
 
-#### 1. **Completar StudentDashboard**
-```bash
-# Arquivo: src/components/dashboard/StudentDashboard.tsx
-# Substituir dados mockados por chamadas reais:
-- useClasses() para listar disciplinas matriculadas
-- useAttendances() para calcular frequência
-- useLessons() para próximas aulas
+### ✅ **Week 0.5 - Infraestrutura Base (COMPLETA)** 
+**Data:** 03/10/2025  
+**Status:** ✅ **100% CONCLUÍDO**  
+**Implementação:** `IMPL-20251003-INFRA-001`
+
+**Entregáveis Completados:**
+- ✅ Utils de Frequência (18 funções)
+- ✅ Utils de Data (22 funções)
+- ✅ Utils de Validação (18 funções)
+- ✅ Utils de Formatação (17 funções)
+- ✅ Componente Modal (3 variantes)
+- ✅ Hooks Customizados (6 hooks)
+- ✅ TypeScript aliases configurados
+- ✅ Build sem erros validado
+- ✅ Documentação completa
+
+**Resultado:** Infraestrutura 80% → **100%** ✅
+
+---
+
+## 🚀 PRÓXIMOS PASSOS
+
+### **Sprint 1 - Features do Aluno (2 semanas)**
+**Início:** 04/10/2025  
+**Término:** 18/10/2025  
+**Objetivo:** Aluno consegue registrar presença e visualizar frequência
+
+#### **Semana 1 (04-11 Out):**
+1. ✅ Integrar StudentDashboard com API real
+   - Usar `useClasses()` para disciplinas matriculadas
+   - Usar `useFrequency()` para calcular frequência
+   - Usar `useLessons()` para próximas aulas
+   - **Reuso:** Hooks e utils já criados na Week 0.5
+
+2. ✅ Criar PresenceRegistrationModal.tsx
+   - Usar `Modal` component (já criado)
+   - Usar `validatePresenceCode()` (já criado)
+   - Usar `canRegisterAttendance()` (já criado)
+   - Usar `formatTimeRemaining()` para countdown
+   - Integrar com POST `/presencas`
+
+3. ✅ Criar FrequencyBadge component
+   - Usar `getFrequencyBadgeClass()` (já criado)
+   - Usar `getFrequencyTextColor()` (já criado)
+   - Exibir porcentagem com cores DaisyUI
+
+#### **Semana 2 (11-18 Out):**
+4. ✅ Criar SubjectDetailPage.tsx
+   - Listar aulas (presente/falta)
+   - Usar `FrequencyBadge` component
+   - Filtros: Todas / Só Faltas
+   - Usar `formatDate()` para datas
+
+5. ✅ Implementar LowFrequencyAlert.tsx
+   - Usar `needsFrequencyAlert()` (já criado)
+   - Usar `calculateRemainingAbsences()` (já criado)
+   - Banner no dashboard quando < 80%
+
+6. ✅ Testes de integração
+   - Testar fluxo completo de registro
+   - Validar cálculos de frequência
+   - Testar alertas
+
+**Entregáveis Sprint 1:**
+- ✅ Aluno vê suas disciplinas com frequência
+- ✅ Aluno registra presença com código (20 min window)
+- ✅ Aluno vê histórico de aulas
+- ✅ Aluno recebe alertas de baixa frequência
+
+**Tempo economizado:** ~30% usando infraestrutura da Week 0.5
+
+---
+
+### **Sprint 2 - Features do Professor (2 semanas)**
+**Início:** 21/10/2025  
+**Término:** 01/11/2025  
+**Objetivo:** Professor abre aula, gera código, monitora presença em tempo real
+
+#### **Semana 1 (21-28 Out):**
+1. ✅ Criar OpenLessonModal.tsx
+   - Usar `ConfirmModal` component (já criado)
+   - Usar `generatePresenceCode()` (já criado)
+   - Usar `formatPresenceCode()` para exibir: "123 456"
+   - Exibir código em destaque com botão copiar
+   - Integrar com POST `/aulas/:id/abrir`
+
+2. ✅ Criar CloseLessonModal.tsx
+   - Usar `ConfirmModal` component (já criado)
+   - Mostrar resumo: X presentes, Y ausentes
+   - Usar `formatPercentage()` (já criado)
+   - Integrar com POST `/aulas/:id/fechar`
+
+3. ✅ Criar RealTimeAttendanceList.tsx
+   - Usar `useRealTimeAttendance()` hook (já criado)
+   - Polling automático a cada 3s
+   - Usar `formatNameToInitials()` para avatares (já criado)
+   - Usar `FrequencyBadge` para porcentagem da turma
+   - Progress bar com `getFrequencyProgressClass()` (já criado)
+
+#### **Semana 2 (28 Out - 01 Nov):**
+4. ✅ Criar ManualAttendancePage.tsx
+   - Lista de alunos com checkboxes
+   - Busca rápida
+   - Marcar/Desmarcar todos
+   - Usar `formatNameToDisplay()` (já criado)
+   - POST `/presencas` (múltiplas)
+
+5. ✅ Implementar timer de 20 minutos
+   - Usar `getTimeRemaining()` (já criado)
+   - Usar `formatTimeRemaining()` para countdown
+   - Usar `isTimeExpired()` para validar
+   - Auto-fechar aula quando expirar
+
+6. ✅ Integrar ProfessorDashboard
+   - Listar turmas do professor
+   - Aulas de hoje com botão "Abrir Aula"
+   - Estatísticas usando `useFrequency()`
+
+**Entregáveis Sprint 2:**
+- ✅ Professor abre aula e gera código
+- ✅ Professor vê lista atualizada em tempo real (3s)
+- ✅ Professor fecha aula após 20 min
+- ✅ Professor faz chamada manual se necessário
+- ✅ Timer visual de 20 minutos
+
+**Tempo economizado:** ~35% usando infraestrutura + hooks
+
+---
+
+### **Sprint 3 - Polimento e Extras (1.5 semanas)**
+**Início:** 04/11/2025  
+**Término:** 14/11/2025  
+**Objetivo:** Finalizar features secundárias e preparar para produção
+
+#### **Semana 1 (04-08 Nov):**
+1. ✅ Criar ProfilePage.tsx (compartilhado)
+   - Ver/editar dados pessoais
+   - Alterar senha
+   - Avatar com iniciais usando `formatNameToInitials()`
+   - Usar `validateEmail()`, `validateRequired()` (já criados)
+
+2. ✅ Implementar geração de PDF (professor)
+   - Botão "Exportar Relatório"
+   - Usar jsPDF
+   - Layout profissional com logo
+   - Dados: turma, frequência, presentes/ausentes
+
+3. ✅ Criar wizard de turma (admin)
+   - Componente `ClassFormWizard.tsx`
+   - Passo 1: Informações básicas
+   - Passo 2: Associar professor
+   - Passo 3: Adicionar alunos (busca + seleção múltipla)
+
+#### **Semana 2 (11-14 Nov):**
+4. ✅ Testes com usuários reais
+   - Admin cria turma completa
+   - Professor abre aula e gera código
+   - Alunos registram presença
+   - Validar fluxo end-to-end
+
+5. ✅ Correções de bugs
+   - Lista de issues identificadas
+   - Priorizar críticos
+   - Testes de regressão
+
+6. ✅ Otimizações de performance
+   - Code splitting com React.lazy()
+   - Memoização com useMemo/useCallback (já usado nos hooks)
+   - Lazy load de modais
+
+**Entregáveis Sprint 3:**
+- ✅ Perfil compartilhado funcional para os 3 roles
+- ✅ Professor exporta relatório PDF
+- ✅ Admin cria turma com wizard intuitivo
+- ✅ Sistema testado e validado
+- ✅ Performance otimizada
+
+---
+
+## 📊 CRONOGRAMA RESUMIDO
+
+| Sprint | Período | Duração | Foco | Status |
+|--------|---------|---------|------|--------|
+| **Week 0.5** | 03 Out | 1 dia | Infraestrutura Base | ✅ **COMPLETO** |
+| **Sprint 1** | 04-18 Out | 2 semanas | Features Aluno | ⏳ **PRÓXIMO** |
+| **Sprint 2** | 21 Out - 01 Nov | 2 semanas | Features Professor | 📅 Planejado |
+| **Sprint 3** | 04-14 Nov | 1.5 semanas | Polimento + Extras | 📅 Planejado |
+| **TOTAL** | 03 Out - 14 Nov | **5.5 semanas** | MVP Completo | 18% Completo |
+
+### Timeline Visual
 ```
-
-#### 2. **Criar Modal de Registro de Presença**
-```bash
-# Criar: src/features/attendance/student/PresenceRegistrationModal.tsx
-# Integrar com: POST /presencas (com código de 6 dígitos)
-```
-
-#### 3. **Criar Página de Detalhes da Disciplina**
-```bash
-# Criar: src/features/subjects/student/SubjectDetailPage.tsx
-# Listar aulas com status (presente/falta)
-```
-
-#### 4. **Implementar Alertas de Frequência**
-```bash
-# Criar: src/features/attendance/student/LowFrequencyAlert.tsx
-# Calcular: (presentes / total) < 0.80
+Outubro 2025          │ Novembro 2025
+─────────────────────┼──────────────────
+03 ████ Week 0.5 ✅  │
+04-18 ████████ Sprint 1 (Aluno)        │
+   21-01 ████████ Sprint 2 (Professor) │
+      04-14 ██████ Sprint 3 (Polish)   │
+                     │     14 🎉 LAUNCH
 ```
 
 ---
 
-### **Fase 3: Features do Professor (1 semana)**
+## 🎯 COMPARAÇÃO: ANTES vs DEPOIS da Week 0.5
 
-#### 1. **Abrir/Fechar Aula**
-```bash
-# Criar: src/features/attendance/professor/OpenLessonModal.tsx
-# Criar: src/features/attendance/professor/CloseLessonModal.tsx
-# Backend: POST /aulas/:id/abrir, POST /aulas/:id/fechar
+### **ANTES (Estado em 03/10 - 08:00)**
+```
+Infraestrutura: 80%
+- Utils: 0%                    ❌
+- Componentes compartilhados: 30%  ⚠️
+- Hooks específicos: 0%        ❌
+- Modal base: 0%               ❌
 ```
 
-#### 2. **Lista em Tempo Real**
-```bash
-# Criar: src/features/attendance/professor/RealTimeAttendanceList.tsx
-# Polling a cada 3 segundos
-# GET /presencas?lessonId=:id
+**Tempo estimado para Sprint 1:** 3 semanas (muita implementação de base)
+
+### **DEPOIS (Estado em 03/10 - 18:00)**
+```
+Infraestrutura: 100% ✅
+- Utils: 100% (75 funções)     ✅
+- Componentes compartilhados: 100%  ✅
+- Hooks específicos: 100%      ✅
+- Modal base: 100%             ✅
 ```
 
-#### 3. **Registro Manual**
-```bash
-# Criar: src/features/attendance/professor/ManualAttendancePage.tsx
-# Lista de alunos com checkboxes
-# POST /presencas (múltiplas)
+**Tempo estimado para Sprint 1:** 2 semanas (apenas features)
+
+### **Economia de Tempo**
+- Sprint 1: **3 semanas → 2 semanas** (-33%)
+- Sprint 2: **3 semanas → 2 semanas** (-33%)
+- Sprint 3: **2 semanas → 1.5 semanas** (-25%)
+- **TOTAL: 8 semanas → 5.5 semanas** (**-31% de tempo**)
+
+---
+
+## 🚀 PRÓXIMOS PASSOS IMEDIATOS (Sprint 1 - Dia 1)
+
+### **Segunda, 04/10/2025 - Manhã**
+
+#### **Tarefa 1: Integrar StudentDashboard com API real (4h)**
+```tsx
+// src/components/dashboard/StudentDashboard.tsx
+// Substituir mocks por hooks reais:
+const { data: classes } = useClasses(); // Lista disciplinas
+const { data: lessons } = useLessons(); // Próximas aulas
 ```
+
+**Checklist:**
+- [ ] Substituir dados mockados por hooks
+- [ ] Usar `useFrequency()` para calcular porcentagens
+- [ ] Usar `formatPercentage()` para exibição
+- [ ] Testar com dados reais do backend
+
+#### **Tarefa 2: Criar FrequencyBadge.tsx (2h)**
+```tsx
+// src/components/ui/FrequencyBadge.tsx
+import { getFrequencyBadgeClass, getFrequencyTextColor } from '@/utils/attendance';
+
+// Componente simples: badge colorido com porcentagem
+```
+
+**Checklist:**
+- [ ] Criar component básico
+- [ ] Integrar utils de frequência
+- [ ] Testar com vários cenários (90%, 75%, 60%, 50%)
+- [ ] Adicionar tooltip opcional
+
+#### **Tarefa 3: Iniciar PresenceRegistrationModal.tsx (2h)**
+```tsx
+// src/features/attendance/student/PresenceRegistrationModal.tsx
+import { Modal } from '@/components/ui/Modal';
+import { validatePresenceCode } from '@/utils/validation';
+
+// Modal para o aluno inserir código de 6 dígitos
+```
+
+**Checklist:**
+- [ ] Criar estrutura básica do modal
+- [ ] Input de código (máscara 6 dígitos)
+- [ ] Validação com `validatePresenceCode()`
+- [ ] Timer com `getTimeRemaining()`
+
+---
+
+### **Segunda, 04/10/2025 - Tarde**
+
+#### **Tarefa 4: Finalizar PresenceRegistrationModal (3h)**
+- [ ] Integrar POST `/presencas`
+- [ ] Tratamento de erros
+- [ ] Loading state usando `LoadingModal`
+- [ ] Sucesso: mostrar confirmação
+- [ ] Erro: código inválido / tempo expirado
+
+#### **Tarefa 5: Testar fluxo completo (1h)**
+- [ ] Abrir aula no backend (via Postman/Insomnia)
+- [ ] Registrar presença pelo frontend
+- [ ] Verificar no dashboard se frequência atualiza
+- [ ] Validar timer de 20 minutos
 
 ---
 
