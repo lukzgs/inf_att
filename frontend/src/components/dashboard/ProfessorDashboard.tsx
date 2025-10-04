@@ -8,28 +8,19 @@ import {
   FiBookOpen
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { useClasses } from '../../hooks/useClasses';
+import { useProfessorClasses, useProfessorOverallStats } from '../../hooks/useProfessorClasses';
 import { useLessons } from '../../hooks/useLessons';
 import { useAttendances } from '../../hooks/useAttendances';
 
 export default function ProfessorDashboard() {
-  // TODO: Get professor ID from auth context
-  const CURRENT_PROFESSOR_ID = 1;
-
-  // Fetch data
-  const { data: allClasses, isLoading: loadingClasses } = useClasses();
+  // Fetch professor's classes with stats
+  const { data: professorClasses, isLoading: loadingClasses } = useProfessorClasses();
   const { data: allLessons, isLoading: loadingLessons } = useLessons();
   const { data: allAttendances, isLoading: loadingAttendances } = useAttendances();
+  const overallStats = useProfessorOverallStats();
 
-  // Filter professor's classes
-  const professorClasses = allClasses?.filter((classItem) => 
-    classItem.users?.some((uc: any) => 
-      uc.userId === CURRENT_PROFESSOR_ID && 
-      (uc.role === 'TEACHER' || uc.role === 'ASSISTANT')
-    )
-  ) || [];
-
-  const professorClassIds = professorClasses.map((c) => c.id);
+  // Get IDs of professor's classes
+  const professorClassIds = professorClasses?.map((c) => c.id) || [];
 
   // Filter professor's lessons
   const professorLessons = allLessons?.filter((lesson) => 
@@ -50,9 +41,6 @@ export default function ProfessorDashboard() {
     return lessonDate > new Date() && lessonDate <= next7Days;
   });
 
-  // Open lessons
-  const openLessons = professorLessons.filter((lesson) => lesson.isOpen);
-
   // Today's attendances
   const todayLessonIds = todayLessons.map((l) => l.id);
   const todayAttendances = allAttendances?.filter((att) => 
@@ -61,9 +49,9 @@ export default function ProfessorDashboard() {
 
   // Stats
   const stats = {
-    totalClasses: professorClasses.length,
+    totalClasses: overallStats.totalClasses,
     todayLessons: todayLessons.length,
-    openLessons: openLessons.length,
+    openLessons: overallStats.openLessons,
     todayAttendances: todayAttendances.length,
   };
 
@@ -348,7 +336,7 @@ export default function ProfessorDashboard() {
               Minhas Turmas
             </h2>
             <p className="section-subtitle">
-              {professorClasses.length} turma(s) ativa(s)
+              {professorClasses?.length || 0} turma(s) ativa(s)
             </p>
           </div>
         </div>
@@ -360,10 +348,8 @@ export default function ProfessorDashboard() {
                 <div key={i} className="skeleton-premium h-48 w-full" />
               ))}
             </>
-          ) : professorClasses.length > 0 ? (
+          ) : professorClasses && professorClasses.length > 0 ? (
             professorClasses.map((classItem) => {
-              const studentsCount = classItem.users?.filter((uc: any) => uc.role === 'STUDENT').length || 0;
-              const lessonsCount = professorLessons.filter((l) => l.classId === classItem.id).length;
               
               return (
                 <Link 
@@ -394,13 +380,13 @@ export default function ProfessorDashboard() {
                       <div className="flex items-center gap-2">
                         <FiUsers className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-base-content/80">
-                          {studentsCount} alunos
+                          {classItem.totalStudents} alunos
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FiClock className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-base-content/80">
-                          {lessonsCount} aulas
+                          {classItem.totalLessons} aulas
                         </span>
                       </div>
                     </div>
