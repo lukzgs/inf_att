@@ -1,0 +1,472 @@
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import {
+  FiArrowLeft,
+  FiUsers,
+  FiClock,
+  FiPlay,
+  FiCheckCircle,
+  FiXCircle,
+  FiBookOpen,
+  FiBarChart2,
+  FiEdit,
+} from 'react-icons/fi';
+import { useClass } from '@/hooks/useClasses';
+import { useLessonsByClass } from '@/hooks/useLessons';
+import { formatNameToInitials } from '@/utils/format';
+import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
+import OpenLessonModal from '@/features/professor/lessons/OpenLessonModal';
+import ManualAttendanceForm from '@/features/professor/lessons/ManualAttendanceForm';
+
+type FilterType = 'all' | 'finished' | 'scheduled';
+
+/**
+ * ClassDetailPage - Página de detalhes da turma para Professor
+ * 
+ * Features:
+ * - Informações gerais da turma (disciplina, código, período)
+ * - Card de estatísticas (total alunos, aulas realizadas, média de frequência)
+ * - Lista de alunos matriculados com % de frequência
+ * - Histórico de aulas (realizadas e agendadas)
+ * - Filtros de aulas (todas, realizadas, agendadas)
+ * - Botão "Abrir Aula" para aulas futuras/hoje
+ * - Loading states e empty states
+ * 
+ * Rota: /professor/turmas/:id
+ */
+export default function ClassDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const classId = id ? parseInt(id) : 0;
+
+  const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
+  const [openLessonModalData, setOpenLessonModalData] = useState<{
+    lessonId: number;
+    className: string;
+    lessonDate: string;
+    totalStudents: number;
+  } | null>(null);
+  
+  const [manualAttendanceData, setManualAttendanceData] = useState<{
+    lessonId: number;
+    className: string;
+    lessonDate: string;
+  } | null>(null);
+
+  // Fetch class data
+  const { data: classData, isLoading: isLoadingClass } = useClass(classId);
+  const { data: lessonsData, isLoading: isLoadingLessons } = useLessonsByClass(classId);
+
+  // Extract students from class users
+  const students = classData?.users?.filter(uc => uc.role === 'STUDENT') || [];
+
+  // Calculate students stats
+  const studentsWithStats = students.map(student => {
+    // TODO: Calculate real attendance percentage per student
+    // For now, using mock data - will be replaced with real calculation
+    const totalLessons = lessonsData?.filter(l => l.closedAt).length || 0;
+    const attendances = Math.floor(Math.random() * totalLessons); // Mock
+    const percentage = totalLessons > 0 ? (attendances / totalLessons) * 100 : 0;
+
+    return {
+      ...student,
+      attendancePercentage: percentage,
+      totalAttendances: attendances,
+      totalLessons,
+    };
+  });
+
+  // Sort students by name
+  studentsWithStats.sort((a, b) => 
+    (a.user?.name || '').localeCompare(b.user?.name || '')
+  );
+
+  // Calculate class average frequency
+  const avgFrequency = studentsWithStats.length > 0
+    ? studentsWithStats.reduce((sum, s) => sum + s.attendancePercentage, 0) / studentsWithStats.length
+    : 0;
+
+  // Filter lessons
+  const today = new Date().toISOString().split('T')[0];
+  const filteredLessons = lessonsData?.filter(lesson => {
+    if (lessonFilter === 'finished') {
+      return lesson.closedAt !== null;
+    }
+    if (lessonFilter === 'scheduled') {
+      return lesson.closedAt === null;
+    }
+    return true;
+  }) || [];
+
+  // Sort lessons by date (most recent first)
+  const sortedLessons = [...filteredLessons].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const isLoading = isLoadingClass || isLoadingLessons;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="skeleton-premium h-20 w-full" />
+        <div className="skeleton-premium h-48 w-full" />
+        <div className="skeleton-premium h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="empty-state">
+        <div className="text-6xl mb-4">❌</div>
+        <h3 className="empty-state-title">Turma não encontrada</h3>
+        <p className="empty-state-description">
+          A turma solicitada não existe ou você não tem permissão para acessá-la.
+        </p>
+        <Link to="/professor" className="btn-premium mt-6">
+          <FiArrowLeft />
+          Voltar ao Dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link 
+          to="/professor"
+          className="btn-premium-outline !p-3"
+        >
+          <FiArrowLeft className="w-5 h-5" />
+        </Link>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {classData.code}
+          </h1>
+          <p className="text-base text-gray-600 dark:text-base-content/70">
+            {classData.subject?.name} • {classData.year}/{classData.semester}
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Card */}
+      <div className="premium-card">
+        <div className="premium-card-glow" />
+        <div className="premium-card-body">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {/* Total Students */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-primary shadow-lg">
+                <FiUsers className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {students.length}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-base-content/70">
+                  Alunos matriculados
+                </div>
+              </div>
+            </div>
+
+            {/* Total Lessons */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-info shadow-lg">
+                <FiBookOpen className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {lessonsData?.filter(l => l.closedAt).length || 0}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-base-content/70">
+                  Aulas realizadas
+                </div>
+              </div>
+            </div>
+
+            {/* Average Frequency */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-success shadow-lg">
+                <FiBarChart2 className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {avgFrequency.toFixed(1)}%
+                </div>
+                <div className="text-sm text-gray-600 dark:text-base-content/70">
+                  Frequência média
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Students List */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="section-title">Alunos Matriculados</h2>
+            <p className="section-subtitle">
+              {students.length} aluno(s) na turma
+            </p>
+          </div>
+        </div>
+
+        <div className="list-card">
+          {students.length === 0 ? (
+            <div className="empty-state">
+              <div className="text-6xl mb-4">👥</div>
+              <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
+              <p className="empty-state-description">
+                Ainda não há alunos matriculados nesta turma.
+              </p>
+            </div>
+          ) : (
+            <div>
+              {studentsWithStats.map((student) => (
+                <div key={student.userId} className="list-card-item">
+                  {/* Avatar */}
+                  <div className="list-card-item-icon">
+                    <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
+                      {formatNameToInitials(student.user?.name || 'N/A')}
+                    </div>
+                  </div>
+
+                  {/* Student Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                      {student.user?.name || 'Nome não disponível'}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-base-content/70">
+                      {student.totalAttendances} de {student.totalLessons} presenças registradas
+                    </p>
+                  </div>
+
+                  {/* Frequency Badge */}
+                  <div className="flex-shrink-0">
+                    <FrequencyBadge percentage={student.attendancePercentage} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Lessons List */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="section-title">Aulas</h2>
+            <p className="section-subtitle">
+              {lessonsData?.length || 0} aula(s) total
+            </p>
+          </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setLessonFilter('all')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              lessonFilter === 'all'
+                ? 'bg-primary text-white shadow-lg'
+                : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
+            }`}
+          >
+            Todas as aulas
+          </button>
+          <button
+            onClick={() => setLessonFilter('finished')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              lessonFilter === 'finished'
+                ? 'bg-primary text-white shadow-lg'
+                : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
+            }`}
+          >
+            Realizadas
+          </button>
+          <button
+            onClick={() => setLessonFilter('scheduled')}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              lessonFilter === 'scheduled'
+                ? 'bg-primary text-white shadow-lg'
+                : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
+            }`}
+          >
+            Agendadas
+          </button>
+        </div>
+
+        {/* Lessons List */}
+        <div className="list-card">
+          {sortedLessons.length === 0 ? (
+            <div className="empty-state">
+              <div className="text-6xl mb-4">📅</div>
+              <h3 className="empty-state-title">
+                {lessonFilter === 'all' && 'Nenhuma aula cadastrada'}
+                {lessonFilter === 'finished' && 'Nenhuma aula realizada'}
+                {lessonFilter === 'scheduled' && 'Nenhuma aula agendada'}
+              </h3>
+              <p className="empty-state-description">
+                {lessonFilter === 'all' && 'Ainda não há aulas cadastradas para esta turma.'}
+                {lessonFilter === 'finished' && 'Ainda não há aulas realizadas.'}
+                {lessonFilter === 'scheduled' && 'Não há aulas agendadas no momento.'}
+              </p>
+            </div>
+          ) : (
+            <div>
+              {sortedLessons.map((lesson) => {
+                const lessonDate = new Date(lesson.date);
+                const isToday = lesson.date.startsWith(today);
+                const isFuture = lessonDate > new Date() || isToday;
+                const isFinished = lesson.closedAt !== null;
+
+                return (
+                  <div key={lesson.id} className="list-card-item">
+                    {/* Status Icon */}
+                    <div className="list-card-item-icon">
+                      <div className={`w-full h-full rounded-xl flex items-center justify-center ${
+                        lesson.isOpen 
+                          ? 'bg-success'
+                          : isFinished
+                          ? 'bg-info'
+                          : isFuture
+                          ? 'bg-warning'
+                          : 'bg-gray-400'
+                      }`}>
+                        {lesson.isOpen ? (
+                          <FiPlay className="w-6 h-6 text-white" />
+                        ) : isFinished ? (
+                          <FiCheckCircle className="w-6 h-6 text-white" />
+                        ) : isFuture ? (
+                          <FiClock className="w-6 h-6 text-white" />
+                        ) : (
+                          <FiXCircle className="w-6 h-6 text-white" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Lesson Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {lessonDate.toLocaleDateString('pt-BR', { 
+                            weekday: 'long', 
+                            day: '2-digit', 
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </p>
+                        {lesson.isOpen && (
+                          <span className="badge-premium badge-premium-success">
+                            <span className="w-2 h-2 rounded-full bg-success animate-pulse mr-1" />
+                            Aberta
+                          </span>
+                        )}
+                        {isToday && !lesson.isOpen && (
+                          <span className="badge-premium badge-premium-warning">
+                            Hoje
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-base-content/70">
+                        {lesson.startTime?.substring(0, 5)} - {lesson.endTime?.substring(0, 5)}
+                        {lesson.description && ` • ${lesson.description}`}
+                        {lesson.closedAt && (
+                          <span className="ml-2">
+                            • Fechada às {new Date(lesson.closedAt).toLocaleTimeString('pt-BR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 flex-shrink-0">
+                      {lesson.isOpen ? (
+                        <button 
+                          onClick={() => setOpenLessonModalData({
+                            lessonId: lesson.id,
+                            className: `${classData.code} - ${classData.subject?.name}`,
+                            lessonDate: lesson.date,
+                            totalStudents: students.length,
+                          })}
+                          className="btn-premium-outline !px-4 !py-2 text-sm bg-error/10 border-error text-error hover:bg-error hover:text-white"
+                        >
+                          Fechar Aula
+                        </button>
+                      ) : (
+                        <>
+                          {isFuture && !isFinished && (
+                            <button 
+                              onClick={() => setOpenLessonModalData({
+                                lessonId: lesson.id,
+                                className: `${classData.code} - ${classData.subject?.name}`,
+                                lessonDate: lesson.date,
+                                totalStudents: students.length,
+                              })}
+                              className="btn-premium !px-4 !py-2 text-sm"
+                            >
+                              <FiPlay className="w-4 h-4" />
+                              Abrir Aula
+                            </button>
+                          )}
+                          {isFinished && (
+                            <button
+                              onClick={() => setManualAttendanceData({
+                                lessonId: lesson.id,
+                                className: `${classData.code} - ${classData.subject?.name}`,
+                                lessonDate: lesson.date,
+                              })}
+                              className="btn-premium-outline !px-4 !py-2 text-sm"
+                            >
+                              <FiEdit className="w-4 h-4" />
+                              Editar Presenças
+                            </button>
+                          )}
+                          <Link
+                            to={`/professor/aulas/${lesson.id}`}
+                            className="btn-premium-outline !px-4 !py-2 text-sm"
+                          >
+                            Ver Detalhes
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Open Lesson Modal */}
+      {openLessonModalData && (
+        <OpenLessonModal
+          lessonId={openLessonModalData.lessonId}
+          className={openLessonModalData.className}
+          lessonDate={openLessonModalData.lessonDate}
+          totalStudents={openLessonModalData.totalStudents}
+          onClose={() => setOpenLessonModalData(null)}
+        />
+      )}
+
+      {/* Manual Attendance Form */}
+      {manualAttendanceData && (
+        <ManualAttendanceForm
+          lessonId={manualAttendanceData.lessonId}
+          classId={classId}
+          className={manualAttendanceData.className}
+          lessonDate={manualAttendanceData.lessonDate}
+          onClose={() => setManualAttendanceData(null)}
+        />
+      )}
+    </div>
+  );
+}

@@ -20,6 +20,7 @@ import AulaFormPage from './pages/admin/aulas/AulaFormPage';
 import PresencasListPage from './pages/admin/presencas/PresencasListPage';
 import PresencaFormPage from './pages/admin/presencas/PresencaFormPage';
 import SubjectDetailPage from './features/student/subjects/SubjectDetailPage';
+import ClassDetailPage from './features/professor/classes/ClassDetailPage';
 import './App.css';
 
 /**
@@ -76,6 +77,9 @@ function App() {
             
             {/* Student Routes */}
             <Route path="student/subjects/:id" element={<SubjectDetailPage />} />
+            
+            {/* Professor Routes */}
+            <Route path="professor/turmas/:id" element={<ClassDetailPage />} />
             
             {/* Admin Routes - Usuários */}
             <Route path="admin/usuarios" element={<UsuariosListPage />} />
