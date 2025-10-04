@@ -1,8 +1,10 @@
 import { FiBook, FiCalendar, FiCheckCircle, FiClock, FiPlus } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentClasses, useStudentOverallStats } from '@/hooks/useStudentClasses';
 import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
+import { PresenceRegistrationModal } from '../attendance/PresenceRegistrationModal';
 import { formatPercentage } from '@/utils/format/formatPercentage';
 import { formatNameToDisplay } from '@/utils/format/formatName';
 
@@ -10,6 +12,7 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const { data: classes, isLoading } = useStudentClasses();
   const { totalClasses, overallPercentage } = useStudentOverallStats();
+  const [isPresenceModalOpen, setIsPresenceModalOpen] = useState(false);
 
   // Loading state
   if (isLoading) {
@@ -50,7 +53,10 @@ export default function StudentDashboard() {
                 </div>
               </div>
               
-              <button className="btn btn-primary gap-2">
+              <button 
+                className="btn btn-primary gap-2"
+                onClick={() => setIsPresenceModalOpen(true)}
+              >
                 <FiPlus className="w-5 h-5" />
                 Registrar Presença
               </button>
@@ -231,7 +237,10 @@ export default function StudentDashboard() {
             </div>
           </Link>
 
-          <button className="action-card text-left">
+          <button 
+            className="action-card text-left"
+            onClick={() => setIsPresenceModalOpen(true)}
+          >
             <div className="flex items-center gap-4">
               <div className="action-card-icon">
                 <FiPlus className="w-6 h-6 text-white" />
@@ -246,6 +255,12 @@ export default function StudentDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Modal de Registro de Presença */}
+      <PresenceRegistrationModal
+        isOpen={isPresenceModalOpen}
+        onClose={() => setIsPresenceModalOpen(false)}
+      />
     </div>
   );
 }
