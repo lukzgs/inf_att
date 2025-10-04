@@ -1,7 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import AdminDashboard from '../components/dashboard/AdminDashboard';
 import ProfessorDashboard from '../components/dashboard/ProfessorDashboard';
-import StudentDashboard from '../components/dashboard/StudentDashboard';
+import StudentDashboard from '../features/student/dashboard/StudentDashboard';
 
 export default function DashboardPage() {
   const { user } = useAuth();
