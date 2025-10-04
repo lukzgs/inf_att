@@ -18,6 +18,42 @@ Este arquivo serve como índice cronológico de todas as implementações realiz
 
 ## 📑 Implementações por Ordem Cronológica
 
+### IMPL-20251003-INFRA-001 (03 Outubro 2025)
+**Infraestrutura Base - Utils, Hooks e Componentes (Frontend)**
+
+- **Data**: 03 Outubro 2025
+- **Categoria**: Frontend / Infraestrutura Base
+- **Prioridade**: 🔴 Crítico
+- **Status**: ✅ Concluído
+- **Arquivo**: `IMPL-20251003-INFRA-001-utils-hooks-componentes.md`
+
+**Resumo**:
+- 75 funções utilitárias (attendance, date, validation, format)
+- 3 componentes Modal (base, confirm, loading)
+- 6 hooks customizados (useFrequency, useRealTimeAttendance)
+- Configuração TypeScript com aliases (@/)
+- Build validado sem erros
+
+**Arquivos Criados (20)**:
+- `frontend/src/utils/attendance/` (4 arquivos - 18 funções)
+- `frontend/src/utils/date/` (4 arquivos - 22 funções)
+- `frontend/src/utils/validation/` (4 arquivos - 18 funções)
+- `frontend/src/utils/format/` (4 arquivos - 17 funções)
+- `frontend/src/components/ui/Modal.tsx` (3 componentes)
+- `frontend/src/hooks/` (3 arquivos - 6 hooks)
+- `frontend/GUIA_USO_INFRAESTRUTURA.md` (documentação)
+
+**Arquivos Modificados (3)**:
+- `frontend/tsconfig.app.json` (path aliases)
+- `frontend/vite.config.ts` (resolver)
+- `frontend/package.json` (@types/node)
+
+**Impacto**: Infraestrutura 80% → 100%. Base completa para Sprints 1, 2 e 3.
+
+**Tempo**: ~4-5 horas | **Linhas**: ~2,730
+
+---
+
 ### IMPL-20250102-SPRINT2-001 (02 Janeiro 2025)
 **CRUD de Disciplinas - Admin MVP (Frontend Sprint 2)**
 
