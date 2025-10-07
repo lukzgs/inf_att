@@ -189,7 +189,7 @@ export default function OpenLessonModal({
                 </div>
                 <button
                   onClick={handleCopyCode}
-                  className="absolute -top-3 -right-3 btn btn-circle btn-primary shadow-lg hover:scale-110 transition-transform"
+                  className="absolute -top-3 -right-3 btn btn-circle btn-accent shadow-lg hover:scale-110 transition-transform"
                 >
                   {showCopied ? (
                     <FiCheckCircle className="w-5 h-5" />

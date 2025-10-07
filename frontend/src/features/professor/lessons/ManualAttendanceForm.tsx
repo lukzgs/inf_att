@@ -355,7 +355,7 @@ export default function ManualAttendanceForm({
           </button>
           <button
             onClick={handleSave}
-            className="btn btn-primary flex-1"
+            className="btn btn-accent flex-1"
             disabled={isSaving || !editReason.trim()}
           >
             {isSaving ? (
