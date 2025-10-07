@@ -23,6 +23,7 @@ export interface Lesson {
   openedAt?: string;
   closedAt?: string;
   openedBy?: number;
+  hasAttendancePassword?: boolean; // Flag indicating if lesson requires password for attendance
   createdAt?: string;
   updatedAt?: string;
 }
@@ -34,6 +35,7 @@ export interface CreateLessonDto {
   startTime: string;
   endTime: string;
   classId: number;
+  attendancePassword?: string;
 }
 
 export interface UpdateLessonDto {

@@ -131,6 +131,7 @@ export function useFrequencyPercentage(present: number, total: number): number {
  * const isApproved = useIsApproved(23, 25); // true (92% >= 75%)
  * ```
  */
+
 export function useIsApproved(
   present: number,
   total: number,
