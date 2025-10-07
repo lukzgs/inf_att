@@ -180,3 +180,50 @@ export function formatWeekday(date: Date | string | number): string {
 
   return new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(dateObj);
 }
+
+/**
+ * Formata distância de tempo até agora (ex: "há 5 minutos")
+ * 
+ * @param date - Data (Date object, string ISO, ou timestamp)
+ * @returns String formatada com distância até agora
+ * 
+ * @example
+ * formatDistanceToNow(new Date(Date.now() - 60000))        // 'há 1 minuto'
+ * formatDistanceToNow(new Date(Date.now() - 3600000))      // 'há 1 hora'
+ * formatDistanceToNow(new Date(Date.now() - 86400000))     // 'há 1 dia'
+ */
+export function formatDistanceToNow(date: Date | string | number): string {
+  const dateObj = typeof date === 'string' || typeof date === 'number' 
+    ? new Date(date) 
+    : date;
+
+  if (isNaN(dateObj.getTime())) {
+    return 'Data inválida';
+  }
+
+  const now = new Date();
+  const diffMs = now.getTime() - dateObj.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return 'agora mesmo';
+  if (diffMins === 1) return 'há 1 minuto';
+  if (diffMins < 60) return `há ${diffMins} minutos`;
+  if (diffHours === 1) return 'há 1 hora';
+  if (diffHours < 24) return `há ${diffHours} horas`;
+  if (diffDays === 1) return 'há 1 dia';
+  if (diffDays < 7) return `há ${diffDays} dias`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return weeks === 1 ? 'há 1 semana' : `há ${weeks} semanas`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return months === 1 ? 'há 1 mês' : `há ${months} meses`;
+  }
+  
+  const years = Math.floor(diffDays / 365);
+  return years === 1 ? 'há 1 ano' : `há ${years} anos`;
+}

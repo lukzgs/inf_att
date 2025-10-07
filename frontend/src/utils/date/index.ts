@@ -13,6 +13,7 @@ export {
   formatFullDate,
   formatISODate,
   formatWeekday,
+  formatDistanceToNow,
 } from './formatDate';
 
 // Cálculo de tempo restante
