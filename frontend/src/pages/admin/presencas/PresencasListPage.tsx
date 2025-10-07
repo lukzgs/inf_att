@@ -98,7 +98,7 @@ export default function PresencasListPage() {
           <h1 className="text-3xl font-bold text-white">Presenças</h1>
           <p className="text-gray-400 mt-1">Gerencie o registro de presença dos alunos</p>
         </div>
-        <Link to="/admin/presencas/novo" className="btn btn-primary">
+        <Link to="/admin/presencas/novo" className="btn btn-accent">
           <FiPlus className="w-5 h-5" />
           Nova Presença
         </Link>

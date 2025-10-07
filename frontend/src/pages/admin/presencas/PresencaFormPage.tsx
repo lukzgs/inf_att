@@ -302,7 +302,7 @@ export default function PresencaFormPage() {
 
         {/* Actions */}
         <div className="flex gap-4">
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-accent" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <span className="loading loading-spinner"></span>

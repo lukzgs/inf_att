@@ -87,12 +87,20 @@ export default function TurmasListPage() {
             Gerencie turmas, professores e alunos
           </p>
         </div>
-        <Link to="/admin/turmas/novo">
-          <Button variant="default" size="md">
-            <FiPlus className="w-5 h-5" />
-            Nova Turma
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/admin/turmas/wizard">
+            <Button variant="accent" size="md">
+              <FiPlus className="w-5 h-5" />
+              Wizard
+            </Button>
+          </Link>
+          <Link to="/admin/turmas/novo">
+            <Button variant="default" size="md">
+              <FiPlus className="w-5 h-5" />
+              Nova Turma
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filtros e Busca */}
