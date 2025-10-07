@@ -1,7 +1,8 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiHome, FiBookOpen, FiLogOut, FiUsers, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiBookOpen, FiLogOut, FiUsers, FiMenu, FiX, FiUser, FiBarChart2 } from 'react-icons/fi';
 import { useState } from 'react';
+import { NotificationCenter } from '../components/notifications/NotificationCenter';
 
 const NavItem = ({ to, icon, label, onClick }: { 
   to: string; 
@@ -47,13 +48,16 @@ export default function MainLayout() {
             INF Attendance
           </Link>
         </div>
-        <button 
-          onClick={toggleSidebar}
-          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
-          aria-label="Toggle menu"
-        >
-          {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <button 
+            onClick={toggleSidebar}
+            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -81,9 +85,10 @@ export default function MainLayout() {
             <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
               <FiBookOpen className="w-6 h-6 text-white" />
             </div>
-            <Link to="/dashboard" className="text-2xl font-bold text-gray-900 dark:text-white">
+            <Link to="/dashboard" className="text-2xl font-bold text-gray-900 dark:text-white flex-1">
               INF Attendance
             </Link>
+            <NotificationCenter />
           </div>
 
           {/* Mobile header inside sidebar */}
@@ -115,16 +120,24 @@ export default function MainLayout() {
                 onClick={closeSidebar}
               />
               
-              {user?.roles.includes('ADMIN') && (
-                <NavItem 
-                  to="/courses" 
-                  icon={<FiBookOpen size={20} />} 
-                  label="Cursos"
-                  onClick={closeSidebar}
-                />
+              {user?.roles?.includes('ADMIN') && (
+                <>
+                  <NavItem 
+                    to="/courses" 
+                    icon={<FiBookOpen size={20} />} 
+                    label="Cursos"
+                    onClick={closeSidebar}
+                  />
+                  <NavItem 
+                    to="/statistics" 
+                    icon={<FiBarChart2 size={20} />} 
+                    label="Estatísticas"
+                    onClick={closeSidebar}
+                  />
+                </>
               )}
 
-              {user?.roles.includes('PROFESSOR') && (
+              {user?.roles?.includes('PROFESSOR') && (
                 <NavItem 
                   to="/turmas" 
                   icon={<FiUsers size={20} />} 
@@ -138,7 +151,11 @@ export default function MainLayout() {
           {/* User Info e Logout */}
           <div className="p-4 border-t border-gray-200 dark:border-base-300">
             {/* User Card */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-base-200 dark:to-base-300 rounded-2xl p-4 mb-3">
+            <Link 
+              to="/profile"
+              onClick={closeSidebar}
+              className="block bg-gradient-to-br from-gray-50 to-gray-100 dark:from-base-200 dark:to-base-300 rounded-2xl p-4 mb-3 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-lg">
                   <span className="font-bold text-lg">{user?.name?.charAt(0).toUpperCase()}</span>
@@ -147,27 +164,28 @@ export default function MainLayout() {
                   <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{user?.name || 'Usuário'}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{user?.email}</p>
                 </div>
+                <FiUser className="text-gray-400 flex-shrink-0" size={18} />
               </div>
               
               {/* Role Badge */}
               <div className="flex gap-2">
-                {user?.roles.includes('ADMIN') && (
+                {user?.roles?.includes('ADMIN') && (
                   <span className="inline-flex items-center px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
                     Admin
                   </span>
                 )}
-                {user?.roles.includes('PROFESSOR') && (
+                {user?.roles?.includes('PROFESSOR') && (
                   <span className="inline-flex items-center px-2 py-1 rounded-lg bg-info/10 text-info text-xs font-semibold">
                     Professor
                   </span>
                 )}
-                {user?.roles.includes('STUDENT') && (
+                {user?.roles?.includes('STUDENT') && (
                   <span className="inline-flex items-center px-2 py-1 rounded-lg bg-accent/10 text-accent text-xs font-semibold">
                     Aluno
                   </span>
                 )}
               </div>
-            </div>
+            </Link>
             
             {/* Logout Button */}
             <button 

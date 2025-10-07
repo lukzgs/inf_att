@@ -1,27 +1,52 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthHandler } from './contexts/AuthHandler';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import CoursesListPage from './pages/CoursesListPage';
-import CourseFormPage from './pages/CourseFormPage';
-import CoursePage from './pages/CoursePage';
-import UsuariosListPage from './pages/admin/usuarios/UsuariosListPage';
-import UsuarioFormPage from './pages/admin/usuarios/UsuarioFormPage';
-import DisciplinasListPage from './pages/admin/disciplinas/DisciplinasListPage';
-import DisciplinaFormPage from './pages/admin/disciplinas/DisciplinaFormPage';
-import TurmasListPage from './pages/admin/turmas/TurmasListPage';
-import TurmaFormPage from './pages/admin/turmas/TurmaFormPage';
-import AulasListPage from './pages/admin/aulas/AulasListPage';
-import AulaFormPage from './pages/admin/aulas/AulaFormPage';
-import PresencasListPage from './pages/admin/presencas/PresencasListPage';
-import PresencaFormPage from './pages/admin/presencas/PresencaFormPage';
-import SubjectDetailPage from './features/student/subjects/SubjectDetailPage';
-import ClassDetailPage from './features/professor/classes/ClassDetailPage';
+import { LoadingPage } from './components/shared/LoadingPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './App.css';
+
+// Core pages (always loaded - small and essential)
+import LoginPage from './pages/LoginPage';
+import NotFoundPage from './pages/NotFoundPage';
+import DashboardPage from './pages/DashboardPage'; // ✅ Dashboard carregado imediatamente
+
+// Professor pages (carregadas imediatamente para melhor performance)
+import ClassDetailPage from './features/professor/classes/ClassDetailPage';
+
+// Lazy-loaded pages (loaded on demand)
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const StatisticsPage = lazy(() => import('./pages/StatisticsPage'));
+const CoursesListPage = lazy(() => import('./pages/CoursesListPage'));
+const CourseFormPage = lazy(() => import('./pages/CourseFormPage'));
+const CoursePage = lazy(() => import('./pages/CoursePage'));
+
+// Student pages
+const SubjectDetailPage = lazy(() => import('./features/student/subjects/SubjectDetailPage'));
+
+// Admin - Usuários
+const UsuariosListPage = lazy(() => import('./pages/admin/usuarios/UsuariosListPage'));
+const UsuarioFormPage = lazy(() => import('./pages/admin/usuarios/UsuarioFormPage'));
+
+// Admin - Disciplinas
+const DisciplinasListPage = lazy(() => import('./pages/admin/disciplinas/DisciplinasListPage'));
+const DisciplinaFormPage = lazy(() => import('./pages/admin/disciplinas/DisciplinaFormPage'));
+
+// Admin - Turmas
+const TurmasListPage = lazy(() => import('./pages/admin/turmas/TurmasListPage'));
+const TurmaFormPage = lazy(() => import('./pages/admin/turmas/TurmaFormPage'));
+const ClassFormWizard = lazy(() => import('./components/wizard/ClassFormWizard').then(m => ({ default: m.ClassFormWizard })));
+
+// Admin - Aulas
+const AulasListPage = lazy(() => import('./pages/admin/aulas/AulasListPage'));
+const AulaFormPage = lazy(() => import('./pages/admin/aulas/AulaFormPage'));
+
+// Admin - Presenças
+const PresencasListPage = lazy(() => import('./pages/admin/presencas/PresencasListPage'));
+const PresencaFormPage = lazy(() => import('./pages/admin/presencas/PresencaFormPage'));
 
 /**
  * Handles the root path, redirecting based on auth state or showing a loading indicator.
@@ -43,10 +68,11 @@ function RootRedirect() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <AuthHandler />
-        <Toaster 
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <AuthHandler />
+          <Toaster 
           position="bottom-center" 
           richColors 
           closeButton
@@ -71,47 +97,142 @@ function App() {
             }
           >
             <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="courses" element={<CoursesListPage />} />
-            <Route path="courses/new" element={<CourseFormPage />} />
-            <Route path="courses/:id" element={<CoursePage />} />
+            <Route path="profile" element={
+              <Suspense fallback={<LoadingPage />}>
+                <ProfilePage />
+              </Suspense>
+            } />
+            <Route path="statistics" element={
+              <Suspense fallback={<LoadingPage />}>
+                <StatisticsPage />
+              </Suspense>
+            } />
+            <Route path="courses" element={
+              <Suspense fallback={<LoadingPage />}>
+                <CoursesListPage />
+              </Suspense>
+            } />
+            <Route path="courses/new" element={
+              <Suspense fallback={<LoadingPage />}>
+                <CourseFormPage />
+              </Suspense>
+            } />
+            <Route path="courses/:id" element={
+              <Suspense fallback={<LoadingPage />}>
+                <CoursePage />
+              </Suspense>
+            } />
             
             {/* Student Routes */}
-            <Route path="student/subjects/:id" element={<SubjectDetailPage />} />
+            <Route path="student/subjects/:id" element={
+              <Suspense fallback={<LoadingPage />}>
+                <SubjectDetailPage />
+              </Suspense>
+            } />
             
-            {/* Professor Routes */}
+            {/* Professor Routes - Sem Suspense para carregamento mais rápido */}
             <Route path="professor/turmas/:id" element={<ClassDetailPage />} />
             
             {/* Admin Routes - Usuários */}
-            <Route path="admin/usuarios" element={<UsuariosListPage />} />
-            <Route path="admin/usuarios/novo" element={<UsuarioFormPage />} />
-            <Route path="admin/usuarios/:id/editar" element={<UsuarioFormPage />} />
+            <Route path="admin/usuarios" element={
+              <Suspense fallback={<LoadingPage />}>
+                <UsuariosListPage />
+              </Suspense>
+            } />
+            <Route path="admin/usuarios/novo" element={
+              <Suspense fallback={<LoadingPage />}>
+                <UsuarioFormPage />
+              </Suspense>
+            } />
+            <Route path="admin/usuarios/:id/editar" element={
+              <Suspense fallback={<LoadingPage />}>
+                <UsuarioFormPage />
+              </Suspense>
+            } />
             
             {/* Admin Routes - Disciplinas */}
-            <Route path="admin/disciplinas" element={<DisciplinasListPage />} />
-            <Route path="admin/disciplinas/novo" element={<DisciplinaFormPage />} />
-            <Route path="admin/disciplinas/:id/editar" element={<DisciplinaFormPage />} />
+            <Route path="admin/disciplinas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <DisciplinasListPage />
+              </Suspense>
+            } />
+            <Route path="admin/disciplinas/novo" element={
+              <Suspense fallback={<LoadingPage />}>
+                <DisciplinaFormPage />
+              </Suspense>
+            } />
+            <Route path="admin/disciplinas/:id/editar" element={
+              <Suspense fallback={<LoadingPage />}>
+                <DisciplinaFormPage />
+              </Suspense>
+            } />
             
             {/* Admin Routes - Turmas */}
-            <Route path="admin/turmas" element={<TurmasListPage />} />
-            <Route path="admin/turmas/novo" element={<TurmaFormPage />} />
-            <Route path="admin/turmas/:id/editar" element={<TurmaFormPage />} />
+            <Route path="admin/turmas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <TurmasListPage />
+              </Suspense>
+            } />
+            <Route path="admin/turmas/novo" element={
+              <Suspense fallback={<LoadingPage />}>
+                <TurmaFormPage />
+              </Suspense>
+            } />
+            <Route path="admin/turmas/wizard" element={
+              <Suspense fallback={<LoadingPage />}>
+                <ClassFormWizard />
+              </Suspense>
+            } />
+            <Route path="admin/turmas/:id/editar" element={
+              <Suspense fallback={<LoadingPage />}>
+                <TurmaFormPage />
+              </Suspense>
+            } />
             
             {/* Admin Routes - Aulas */}
-            <Route path="admin/aulas" element={<AulasListPage />} />
-            <Route path="admin/aulas/novo" element={<AulaFormPage />} />
-            <Route path="admin/aulas/:id/editar" element={<AulaFormPage />} />
+            <Route path="admin/aulas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <AulasListPage />
+              </Suspense>
+            } />
+            <Route path="admin/aulas/novo" element={
+              <Suspense fallback={<LoadingPage />}>
+                <AulaFormPage />
+              </Suspense>
+            } />
+            <Route path="admin/aulas/:id/editar" element={
+              <Suspense fallback={<LoadingPage />}>
+                <AulaFormPage />
+              </Suspense>
+            } />
             
             {/* Admin Routes - Presencas */}
-            <Route path="admin/presencas" element={<PresencasListPage />} />
-            <Route path="admin/presencas/novo" element={<PresencaFormPage />} />
-            <Route path="admin/presencas/:lessonId/:userId/editar" element={<PresencaFormPage />} />
+            <Route path="admin/presencas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <PresencasListPage />
+              </Suspense>
+            } />
+            <Route path="admin/presencas/novo" element={
+              <Suspense fallback={<LoadingPage />}>
+                <PresencaFormPage />
+              </Suspense>
+            } />
+            <Route path="admin/presencas/:lessonId/:userId/editar" element={
+              <Suspense fallback={<LoadingPage />}>
+                <PresencaFormPage />
+              </Suspense>
+            } />
           </Route>
 
           {/* Root redirect handles the "/" path */}
           <Route path="/" element={<RootRedirect />} />
+          
+          {/* 404 - Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </Router>
+    </ErrorBoundary>
   );
 }
 

@@ -25,7 +25,6 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setError,
   } = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
   });
@@ -38,13 +37,11 @@ export default function LoginPage() {
       const token = response.data.access_token;
       await login(token);
       toast.success('Login realizado com sucesso!');
-    } catch (err) {
-      setError('root.serverError', {
-        type: 'manual',
-        message: 'Falha no login. Verifique suas credenciais.',
-      });
+    } catch (err: any) {
+      // Apenas toast, sem erro no card
+      const errorMessage = err?.response?.data?.message || 'Verifique suas credenciais e tente novamente.';
       toast.error('Falha no login', {
-        description: 'Verifique suas credenciais e tente novamente.',
+        description: errorMessage,
       });
       console.error(err);
     }
@@ -226,31 +223,6 @@ export default function LoginPage() {
                       Esqueceu a senha?
                     </a>
                   </div>
-
-                  {/* Error Alert */}
-                  {errors.root?.serverError && (
-                    <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-error/10 border-l-4 border-red-500 dark:border-error rounded-lg">
-                      <svg
-                        className="w-5 h-5 text-red-500 dark:text-error flex-shrink-0 mt-0.5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <div>
-                        <p className="text-sm font-semibold text-red-800 dark:text-error">
-                          Erro ao fazer login
-                        </p>
-                        <p className="text-sm text-red-700 dark:text-error/80 mt-1">
-                          {errors.root.serverError.message}
-                        </p>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Submit Button */}
                   <button
