@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowLeft,
   FiUsers,
@@ -10,11 +11,13 @@ import {
   FiBookOpen,
   FiBarChart2,
   FiEdit,
+  FiChevronDown,
+  FiChevronUp,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
-import { useLessonsByClass } from '@/hooks/useLessons';
 import { formatNameToInitials } from '@/utils/format';
 import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
+import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import OpenLessonModal from '@/features/professor/lessons/OpenLessonModal';
 import ManualAttendanceForm from '@/features/professor/lessons/ManualAttendanceForm';
 
@@ -37,8 +40,16 @@ type FilterType = 'all' | 'finished' | 'scheduled';
 export default function ClassDetailPage() {
   const { id } = useParams<{ id: string }>();
   const classId = id ? parseInt(id) : 0;
+  const queryClient = useQueryClient();
 
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
+  const [showStudents, setShowStudents] = useState(false);
+  
+  const [lessonDetailModalData, setLessonDetailModalData] = useState<{
+    lessonId: number;
+    className: string;
+  } | null>(null);
+  
   const [openLessonModalData, setOpenLessonModalData] = useState<{
     lessonId: number;
     className: string;
@@ -52,9 +63,12 @@ export default function ClassDetailPage() {
     lessonDate: string;
   } | null>(null);
 
-  // Fetch class data
+  // Fetch class data (já inclui lessons e users)
   const { data: classData, isLoading: isLoadingClass } = useClass(classId);
-  const { data: lessonsData, isLoading: isLoadingLessons } = useLessonsByClass(classId);
+  
+  // Extract lessons from class data
+  const lessonsData = classData?.lessons || [];
+  const isLoadingLessons = isLoadingClass;
 
   // Extract students from class users
   const students = classData?.users?.filter(uc => uc.role === 'STUDENT') || [];
@@ -142,10 +156,10 @@ export default function ClassDetailPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {classData.code}
+            {classData.subject?.code} - {classData.subject?.name}
           </h1>
           <p className="text-base text-gray-600 dark:text-base-content/70">
-            {classData.subject?.name} • {classData.year}/{classData.semester}
+            Turma {classData.code} • {classData.year}/{classData.semester}
           </p>
         </div>
       </div>
@@ -416,25 +430,16 @@ export default function ClassDetailPage() {
                               Abrir Aula
                             </button>
                           )}
-                          {isFinished && (
-                            <button
-                              onClick={() => setManualAttendanceData({
-                                lessonId: lesson.id,
-                                className: `${classData.code} - ${classData.subject?.name}`,
-                                lessonDate: lesson.date,
-                              })}
-                              className="btn-premium-outline !px-4 !py-2 text-sm"
-                            >
-                              <FiEdit className="w-4 h-4" />
-                              Editar Presenças
-                            </button>
-                          )}
-                          <Link
-                            to={`/professor/aulas/${lesson.id}`}
+                          <button
+                            onClick={() => setLessonDetailModalData({
+                              lessonId: lesson.id,
+                              className: `${classData.code} - ${classData.subject?.name}`,
+                            })}
                             className="btn-premium-outline !px-4 !py-2 text-sm"
                           >
-                            Ver Detalhes
-                          </Link>
+                            <FiEdit className="w-4 h-4" />
+                            Gerenciar Aula
+                          </button>
                         </>
                       )}
                     </div>
@@ -465,6 +470,21 @@ export default function ClassDetailPage() {
           className={manualAttendanceData.className}
           lessonDate={manualAttendanceData.lessonDate}
           onClose={() => setManualAttendanceData(null)}
+        />
+      )}
+
+      {/* Lesson Detail Modal */}
+      {lessonDetailModalData && (
+        <LessonDetailModal
+          isOpen={true}
+          lessonId={lessonDetailModalData.lessonId}
+          classId={classId}
+          className={lessonDetailModalData.className}
+          onClose={() => setLessonDetailModalData(null)}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['classes', classId] });
+            queryClient.invalidateQueries({ queryKey: ['lessons', 'class', classId] });
+          }}
         />
       )}
     </div>
