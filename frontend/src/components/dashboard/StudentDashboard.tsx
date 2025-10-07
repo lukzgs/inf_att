@@ -214,7 +214,7 @@ export default function StudentDashboard() {
 
                     <Link
                       to={`/classes/${cls.id}`}
-                      className="btn btn-primary btn-block mt-4"
+                      className="btn btn-accent btn-block mt-4"
                     >
                       Ver Detalhes
                     </Link>

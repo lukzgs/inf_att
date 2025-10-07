@@ -298,7 +298,7 @@ export default function AdminDashboard() {
               {todayLessons.length} aula(s) programada(s) para hoje
             </p>
           </div>
-          <Link to="/admin/aulas" className="btn btn-primary btn-sm">
+          <Link to="/admin/aulas" className="btn btn-accent btn-sm">
             Ver todas
           </Link>
         </div>
