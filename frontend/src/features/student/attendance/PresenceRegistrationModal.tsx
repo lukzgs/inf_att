@@ -56,6 +56,7 @@ export function PresenceRegistrationModal({
 
   // Estados
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [modalState, setModalState] = useState<ModalState>('input');
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
@@ -83,6 +84,7 @@ export function PresenceRegistrationModal({
   useEffect(() => {
     if (isOpen) {
       setCode('');
+      setPassword('');
       setModalState('input');
       setErrorMessage('');
       setSelectedLesson(openLessons[0]?.id || null);
@@ -136,6 +138,7 @@ export function PresenceRegistrationModal({
         lessonId: selectedLesson,
         userId: user.id,
         isPresent: true,
+        attendancePassword: password || undefined, // Include password if provided
         // code: code, // Adicionar quando backend aceitar
       });
 
@@ -203,9 +206,10 @@ export function PresenceRegistrationModal({
               onClick={() => {
                 setModalState('input');
                 setCode('');
+                setPassword('');
                 setErrorMessage('');
               }}
-              className="btn btn-primary mt-4"
+              className="btn btn-accent mt-4"
             >
               Tentar Novamente
             </button>
@@ -271,6 +275,32 @@ export function PresenceRegistrationModal({
                   )}
                 </div>
 
+                {/* Password Input (if lesson requires password) */}
+                {openLessons[0]?.hasAttendancePassword && (
+                  <div>
+                    <label className="label">
+                      <span className="label-text font-semibold">Senha de presença:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Digite a senha fornecida pelo professor"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && code.length === 6) {
+                          handleSubmit();
+                        }
+                      }}
+                      className="input input-bordered w-full"
+                    />
+                    <label className="label">
+                      <span className="label-text-alt text-base-content/60">
+                        Esta aula requer uma senha para registrar presença
+                      </span>
+                    </label>
+                  </div>
+                )}
+
                 {/* Instruções */}
                 <div className="text-sm text-base-content/70 bg-base-200 rounded-lg p-3">
                   <p className="font-semibold mb-1">📝 Instruções:</p>
@@ -308,7 +338,7 @@ export function PresenceRegistrationModal({
             <button
               onClick={handleSubmit}
               disabled={code.length !== 6}
-              className="btn btn-primary flex-1"
+              className="btn btn-accent flex-1"
             >
               Confirmar
             </button>

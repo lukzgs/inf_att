@@ -231,14 +231,14 @@ export default function SubjectDetailPage() {
         
         <div className="join">
           <button
-            className={`btn join-item btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+            className={`btn join-item btn-sm ${filter === 'all' ? 'btn-accent' : 'btn-ghost'}`}
             onClick={() => setFilter('all')}
           >
             <FiFilter className="w-4 h-4" />
             Todas ({classDetail.lessons.length})
           </button>
           <button
-            className={`btn join-item btn-sm ${filter === 'absences' ? 'btn-primary' : 'btn-ghost'}`}
+            className={`btn join-item btn-sm ${filter === 'absences' ? 'btn-accent' : 'btn-ghost'}`}
             onClick={() => setFilter('absences')}
           >
             <FiXCircle className="w-4 h-4" />

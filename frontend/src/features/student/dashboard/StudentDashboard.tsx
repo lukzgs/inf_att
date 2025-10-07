@@ -55,7 +55,7 @@ export default function StudentDashboard() {
               </div>
               
               <button 
-                className="btn btn-primary gap-2"
+                className="btn btn-accent gap-2"
                 onClick={() => setIsPresenceModalOpen(true)}
               >
                 <FiPlus className="w-5 h-5" />
@@ -181,7 +181,7 @@ export default function StudentDashboard() {
 
                     <Link
                       to={`/student/subjects/${cls.id}`}
-                      className="btn btn-primary btn-block mt-4"
+                      className="btn btn-accent btn-block mt-4"
                     >
                       Ver Detalhes
                     </Link>
@@ -200,7 +200,7 @@ export default function StudentDashboard() {
                     <p className="empty-state-description">
                       Você ainda não está matriculado em nenhuma disciplina
                     </p>
-                    <Link to="/subjects" className="btn btn-primary mt-4">
+                    <Link to="/subjects" className="btn btn-accent mt-4">
                       Ver Disciplinas Disponíveis
                     </Link>
                   </div>
