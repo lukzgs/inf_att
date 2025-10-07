@@ -15,7 +15,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'btn-primary',
+        default: 'btn-accent',
         secondary: 'btn-secondary',
         accent: 'btn-accent',
         ghost: 'btn-ghost',

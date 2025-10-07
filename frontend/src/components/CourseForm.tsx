@@ -116,7 +116,7 @@ export default function CourseForm({ initialData, onSuccess }: CourseFormProps) 
         <div className="form-control mt-6 gap-3">
           <button 
             type="submit" 
-            className="btn btn-primary" 
+            className="btn btn-accent" 
             disabled={mutation.isPending}
           >
             {mutation.isPending ? (
