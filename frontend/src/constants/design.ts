@@ -79,7 +79,7 @@ export const COMPONENT_CLASSES = {
   
   // Button (DaisyUI base)
   btn: 'btn',
-  btnPrimary: 'btn btn-primary',
+  btnPrimary: 'btn btn-accent',
   btnSecondary: 'btn btn-secondary',
   btnGhost: 'btn btn-ghost',
   btnOutline: 'btn btn-outline',
