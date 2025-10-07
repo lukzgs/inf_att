@@ -11,8 +11,6 @@ import {
   FiBookOpen,
   FiBarChart2,
   FiEdit,
-  FiChevronDown,
-  FiChevronUp,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
 import { formatNameToInitials } from '@/utils/format';
@@ -43,7 +41,6 @@ export default function ClassDetailPage() {
   const queryClient = useQueryClient();
 
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
-  const [showStudents, setShowStudents] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
@@ -145,7 +142,7 @@ export default function ClassDetailPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="-mt-4 sm:-mt-6 lg:-mt-8 space-y-8 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link 
