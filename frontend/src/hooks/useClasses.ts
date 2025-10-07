@@ -32,6 +32,22 @@ export interface Class {
     workload: number;
   };
   users?: UserClass[];
+  lessons?: {
+    id: number;
+    name?: string;
+    description?: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    classId: number;
+    isOpen: boolean;
+    openedAt?: string;
+    closedAt?: string;
+    openedBy?: number;
+    hasAttendancePassword?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  }[];
   createdAt?: string;
   updatedAt?: string;
 }
