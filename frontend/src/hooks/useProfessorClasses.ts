@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/services/api';
 import type { Class } from './useClasses';
 
 export interface ProfessorClassWithStats extends Class {
@@ -19,23 +20,8 @@ export const useProfessorClasses = () => {
         return [];
       }
 
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Token não encontrado');
-      }
-
-      const response = await fetch('http://localhost:3000/turmas/professor/minhas-turmas', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao buscar turmas do professor');
-      }
-
-      const classes = await response.json();
+      const response = await api.get('/turmas/professor/minhas-turmas');
+      const classes = response.data;
 
       return classes.map((cls: any) => ({
         ...cls,

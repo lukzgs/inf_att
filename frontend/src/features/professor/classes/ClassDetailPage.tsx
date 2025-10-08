@@ -8,8 +8,6 @@ import {
   FiPlay,
   FiCheckCircle,
   FiXCircle,
-  FiBookOpen,
-  FiBarChart2,
   FiEdit,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
@@ -41,6 +39,7 @@ export default function ClassDetailPage() {
   const queryClient = useQueryClient();
 
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
+  const [showStudents, setShowStudents] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
@@ -142,7 +141,7 @@ export default function ClassDetailPage() {
   }
 
   return (
-    <div className="-mt-4 sm:-mt-6 lg:-mt-8 space-y-8 animate-fade-in-up">
+    <div className="animate-fade-in-up pt-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link 
@@ -156,115 +155,10 @@ export default function ClassDetailPage() {
             {classData.subject?.code} - {classData.subject?.name}
           </h1>
           <p className="text-base text-gray-600 dark:text-base-content/70">
-            Turma {classData.code} • {classData.year}/{classData.semester}
+            Turma {classData.code} • {classData.year}/{classData.semester} • {students.length} aluno(s) • {lessonsData?.filter(l => l.closedAt).length || 0} aula(s) realizadas
           </p>
         </div>
       </div>
-
-      {/* Stats Card */}
-      <div className="premium-card">
-        <div className="premium-card-glow" />
-        <div className="premium-card-body">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* Total Students */}
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-primary shadow-lg">
-                <FiUsers className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {students.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-base-content/70">
-                  Alunos matriculados
-                </div>
-              </div>
-            </div>
-
-            {/* Total Lessons */}
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-info shadow-lg">
-                <FiBookOpen className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {lessonsData?.filter(l => l.closedAt).length || 0}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-base-content/70">
-                  Aulas realizadas
-                </div>
-              </div>
-            </div>
-
-            {/* Average Frequency */}
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-success shadow-lg">
-                <FiBarChart2 className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {avgFrequency.toFixed(1)}%
-                </div>
-                <div className="text-sm text-gray-600 dark:text-base-content/70">
-                  Frequência média
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Students List */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="section-title">Alunos Matriculados</h2>
-            <p className="section-subtitle">
-              {students.length} aluno(s) na turma
-            </p>
-          </div>
-        </div>
-
-        <div className="list-card">
-          {students.length === 0 ? (
-            <div className="empty-state">
-              <div className="text-6xl mb-4">👥</div>
-              <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
-              <p className="empty-state-description">
-                Ainda não há alunos matriculados nesta turma.
-              </p>
-            </div>
-          ) : (
-            <div>
-              {studentsWithStats.map((student) => (
-                <div key={student.userId} className="list-card-item">
-                  {/* Avatar */}
-                  <div className="list-card-item-icon">
-                    <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
-                      {formatNameToInitials(student.user?.name || 'N/A')}
-                    </div>
-                  </div>
-
-                  {/* Student Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
-                      {student.user?.name || 'Nome não disponível'}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-base-content/70">
-                      {student.totalAttendances} de {student.totalLessons} presenças registradas
-                    </p>
-                  </div>
-
-                  {/* Frequency Badge */}
-                  <div className="flex-shrink-0">
-                    <FrequencyBadge percentage={student.attendancePercentage} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* Lessons List */}
       <section>
@@ -446,6 +340,75 @@ export default function ClassDetailPage() {
             </div>
           )}
         </div>
+      </section>
+
+      {/* Students List - Collapsible */}
+      <section>
+        <div 
+          className="flex items-center justify-between p-4 bg-white dark:bg-base-200 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setShowStudents(!showStudents)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
+              <FiUsers className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Alunos Matriculados
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-base-content/70">
+                {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+          <div className={`transition-transform ${showStudents ? 'rotate-180' : ''}`}>
+            <svg className="w-6 h-6 text-gray-600 dark:text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {showStudents && (
+          <div className="list-card mt-4 animate-fade-in-up">
+            {students.length === 0 ? (
+              <div className="empty-state">
+                <div className="text-6xl mb-4">👥</div>
+                <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
+                <p className="empty-state-description">
+                  Ainda não há alunos matriculados nesta turma.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {studentsWithStats.map((student) => (
+                  <div key={student.userId} className="list-card-item">
+                    {/* Avatar */}
+                    <div className="list-card-item-icon">
+                      <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
+                        {formatNameToInitials(student.user?.name || 'N/A')}
+                      </div>
+                    </div>
+
+                    {/* Student Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                        {student.user?.name || 'Nome não disponível'}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-base-content/70">
+                        {student.totalAttendances} de {student.totalLessons} presenças registradas
+                      </p>
+                    </div>
+
+                    {/* Frequency Badge */}
+                    <div className="flex-shrink-0">
+                      <FrequencyBadge percentage={student.attendancePercentage} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Open Lesson Modal */}

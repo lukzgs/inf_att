@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiEdit2, FiClock, FiCalendar, FiBook, FiUsers, FiCheckCircle, FiXCircle, FiSave, FiPlay, FiLock, FiTrash2 } from 'react-icons/fi';
+import { FiX, FiEdit2, FiClock, FiCalendar, FiBook, FiUsers, FiCheckCircle, FiXCircle, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'sonner';
 import DatePicker from 'react-datepicker';
 import { ptBR } from 'date-fns/locale';
@@ -49,7 +49,7 @@ export function LessonDetailModal({
   classId,
   className,
   onUpdate 
-}: LessonDetailModalProps) {
+} : LessonDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [lessonData, setLessonData] = useState<LessonData | null>(null);
@@ -64,6 +64,40 @@ export function LessonDetailModal({
     endTime: new Date(),
     attendancePassword: '',
   });
+
+  // Função para verificar se a aula está disponível para registro de presença
+  const getLessonStatus = () => {
+    if (!lessonData) return { status: 'unknown', label: 'Carregando...', color: 'badge-ghost' };
+    
+    const now = new Date();
+    const startTime = new Date(lessonData.startTime);
+    const endTime = new Date(lessonData.endTime);
+
+    if (now < startTime) {
+      return { 
+        status: 'upcoming', 
+        label: 'Não iniciada', 
+        color: 'badge-warning',
+        icon: FiClock 
+      };
+    }
+
+    if (now > endTime) {
+      return { 
+        status: 'finished', 
+        label: 'Encerrada', 
+        color: 'badge-ghost',
+        icon: FiXCircle 
+      };
+    }
+
+    return { 
+      status: 'active', 
+      label: 'Disponível para presença', 
+      color: 'badge-success',
+      icon: FiCheckCircle 
+    };
+  };
 
   // Fetch lesson data
   useEffect(() => {
@@ -197,56 +231,6 @@ export function LessonDetailModal({
     }
   };
 
-  const handleOpenLesson = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3000/aulas/${lessonId}/open`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) throw new Error('Erro ao abrir aula');
-
-      toast.success('Aula aberta para registro de presença!');
-      fetchLessonData();
-      onUpdate?.();
-    } catch (error) {
-      console.error('Erro ao abrir aula:', error);
-      toast.error('Erro ao abrir aula');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCloseLesson = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3000/aulas/${lessonId}/close`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) throw new Error('Erro ao fechar aula');
-
-      toast.success('Aula fechada!');
-      fetchLessonData();
-      onUpdate?.();
-    } catch (error) {
-      console.error('Erro ao fechar aula:', error);
-      toast.error('Erro ao fechar aula');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDeleteLesson = async () => {
     if (!confirm('Tem certeza que deseja deletar esta aula? Esta ação não pode ser desfeita.')) {
       return;
@@ -328,13 +312,16 @@ export function LessonDetailModal({
   // Loading state
   if (!lessonData) {
     return (
-      <div className="modal modal-open">
-        <div className="modal-box max-w-4xl">
-          <div className="flex items-center justify-center p-12">
-            <span className="loading loading-spinner loading-lg"></span>
+      <>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={onClose} />
+        <div className="modal modal-open">
+          <div className="modal-box max-w-4xl relative z-50">
+            <div className="flex items-center justify-center p-12">
+              <span className="loading loading-spinner loading-lg"></span>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -352,54 +339,40 @@ export function LessonDetailModal({
   const notRegisteredCount = studentsWithAttendance.filter(s => !s.hasRecord).length;
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h3 className="text-2xl font-bold flex items-center gap-2">
-              <FiBook className="text-primary" />
-              Detalhes da Aula
-            </h3>
-            <p className="text-sm text-gray-500 mt-1">{className}</p>
+    <>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="modal modal-open">
+        <div className="modal-box max-w-4xl max-h-[90vh] overflow-y-auto relative z-50">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h3 className="text-2xl font-bold flex items-center gap-2">
+                <FiBook className="text-primary" />
+                Detalhes da Aula
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">{className}</p>
+            </div>
+            <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
+              <FiX className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Status and Actions */}
+        {/* Actions */}
         <div className="flex items-center gap-3 mb-6">
-          {lessonData?.isOpen ? (
-            <div className="badge badge-success badge-lg gap-2">
-              <FiCheckCircle /> Aula Aberta
-            </div>
-          ) : (
-            <div className="badge badge-warning badge-lg gap-2">
-              <FiLock /> Aula Fechada
-            </div>
-          )}
+          {/* Status Badge */}
+          {(() => {
+            const status = getLessonStatus();
+            const Icon = status.icon || FiClock;
+            return (
+              <div className={`badge ${status.color} badge-lg gap-2`}>
+                <Icon /> {status.label}
+              </div>
+            );
+          })()}
 
           <div className="ml-auto flex gap-2">
             {!isEditing && (
               <>
-                {!lessonData?.isOpen ? (
-                  <button 
-                    onClick={handleOpenLesson}
-                    className="btn-premium-outline btn-sm gap-2 !bg-success/10 !border-success !text-success hover:!bg-success hover:!text-white"
-                    disabled={isLoading}
-                  >
-                    <FiPlay /> Abrir Aula
-                  </button>
-                ) : (
-                  <button 
-                    onClick={handleCloseLesson}
-                    className="btn-premium-outline btn-sm gap-2 !bg-error/10 !border-error !text-error hover:!bg-error hover:!text-white"
-                    disabled={isLoading}
-                  >
-                    <FiLock /> Fechar Aula
-                  </button>
-                )}
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="btn-premium btn-sm gap-2"
@@ -544,7 +517,7 @@ export function LessonDetailModal({
                 <div className="form-control md:col-span-2">
                   <label className="label">
                     <span className="label-text font-semibold flex items-center gap-2">
-                      <FiLock /> Senha de Presença (opcional)
+                      <FiCheckCircle /> Senha de Presença (opcional)
                     </span>
                   </label>
                   {isEditing ? (
@@ -557,7 +530,7 @@ export function LessonDetailModal({
                     />
                   ) : (
                     <p className="text-gray-700 dark:text-gray-300">
-                      {lessonData?.attendancePassword || 'Sem senha'}
+                      {lessonData?.attendancePassword || 'Sem senha'}V
                     </p>
                   )}
                 </div>
@@ -662,6 +635,7 @@ export function LessonDetailModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
