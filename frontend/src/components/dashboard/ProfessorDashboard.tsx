@@ -58,7 +58,7 @@ export default function ProfessorDashboard() {
               <Link
                 key={turma.id}
                 to={`/professor/turmas/${turma.id}`}
-                className="card-premium group hover:scale-105 transition-all duration-300 cursor-pointer"
+                className="card-premium group hover:scale-105 transition-all duration-300 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-6"
               >
                 {/* Card Header */}
                 <div className="mb-4">
@@ -94,7 +94,7 @@ export default function ProfessorDashboard() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-end">
                     <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
                       <FiBook className="w-4 h-4 text-success" />
                     </div>
