@@ -143,25 +143,25 @@ export default function ClassDetailPage() {
   return (
     <div className="animate-fade-in-up pt-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link 
-          to="/professor"
-          className="btn-premium-outline !p-3"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="flex-1">
+      <div className="flex items-center justify-between">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {classData.subject?.code} - {classData.subject?.name}
           </h1>
           <p className="text-base text-gray-600 dark:text-base-content/70">
-            Turma {classData.code} • {classData.year}/{classData.semester} • {students.length} aluno(s) • {lessonsData?.filter(l => l.closedAt).length || 0} aula(s) realizadas
+            Turma {classData.code} • {classData.year}/{classData.semester}
           </p>
         </div>
+        <Link 
+          to="/dashboard"
+          className="btn-premium-outline !p-3"
+        >
+          <FiArrowLeft className="w-5 h-5" />
+        </Link>
       </div>
 
       {/* Lessons List */}
-      <section>
+      <section className="mt-12">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="section-title">Aulas</h2>
