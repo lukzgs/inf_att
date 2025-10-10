@@ -1,0 +1,849 @@
+[
+  {
+    "codigo": "INF01202",
+    "nome": "ALGORITMOS E PROGRAMAÇÃO - CIC",
+    "carater": "Obrigatória",
+    "creditos": 6,
+    "carga_horaria": 90
+  },
+  {
+    "codigo": "MAT01353",
+    "nome": "CÁLCULO E GEOMETRIA ANALÍTICA I - A",
+    "carater": "Obrigatória",
+    "creditos": 6,
+    "carga_horaria": 90
+  },
+  {
+    "codigo": "INF05008",
+    "nome": "FUNDAMENTOS DE ALGORITMOS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01107",
+    "nome": "INTRODUÇÃO À ARQUITETURA DE COMPUTADORES",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "ΜΑΤ01375",
+    "nome": "MATEMÁTICA DISCRETA B",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "MAT01355",
+    "nome": "ÁLGEBRA LINEAR I - A",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01108",
+    "nome": "ARQUITETURA E ORGANIZAÇÃO DE COMPUTADORES I",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "MAT01354",
+    "nome": "CÁLCULO E GEOMETRIA ANALÍTICA II - A",
+    "carater": "Obrigatória",
+    "creditos": 6,
+    "carga_horaria": 90
+  },
+  {
+    "codigo": "INF01203",
+    "nome": "ESTRUTURAS DE DADOS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05508",
+    "nome": "LÓGICA PARA COMPUTAÇÃO",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05512",
+    "nome": "TEORIA DOS GRAFOS E ANÁLISE COMBINATÓRIA",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01112",
+    "nome": "ARQUITETURA E ORGANIZAÇÃO DE COMPUTADORES II",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01058",
+    "nome": "CIRCUITOS DIGITAIS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01124",
+    "nome": "CLASSIFICAÇÃO E PESQUISA DE DADOS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05005",
+    "nome": "LINGUAGENS FORMAIS E AUTOMATOS N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "MAT02219",
+    "nome": "PROBABILIDADE E ESTATÍSTICA",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05501",
+    "nome": "TEORIA DA COMPUTAÇÃO N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "MAT01032",
+    "nome": "CÁLCULO NUMÉRICO A",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05515",
+    "nome": "COMPLEXIDADE DE ALGORITMOS - B",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01145",
+    "nome": "FUNDAMENTOS DE BANCO DE DADOS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01046",
+    "nome": "FUNDAMENTOS DE PROCESSAMENTO DE IMAGENS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01113",
+    "nome": "ORGANIZAÇÃO DE COMPUTADORES B",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01120",
+    "nome": "TÉCNICAS DE CONSTRUÇÃO DE PROGRAMAS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01127",
+    "nome": "ENGENHARIA DE SOFTWARE N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01047",
+    "nome": "FUNDAMENTOS DE COMPUTAÇÃO GRÁFICA",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01048",
+    "nome": "INTELIGÊNCIA ARTIFICIAL",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05010",
+    "nome": "OTIMIZAÇÃO COMBINATÓRIA",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05516",
+    "nome": "SEMÂNTICA FORMAL N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01142",
+    "nome": "SISTEMAS OPERACIONAIS I N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01147",
+    "nome": "COMPILADORES",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01209",
+    "nome": "FUNDAMENTOS DE TOLERÂNCIA A FALHAS",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01043",
+    "nome": "INTERAÇÃO HOMEM-COMPUTADOR",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01121",
+    "nome": "MODELOS DE LINGUAGEM DE PROGRAMAÇÃO",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01154",
+    "nome": "REDES DE COMPUTADORES N",
+    "carater": "Obrigatória",
+    "creditos": 6,
+    "carga_horaria": 90
+  },
+  {
+    "codigo": "INF01151",
+    "nome": "SISTEMAS OPERACIONAIS II N",
+    "carater": "Obrigatória",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01032",
+    "nome": "EMPREENDIMENTO EM INFORMÁTICA",
+    "carater": "Alternativa",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "QUI99009",
+    "nome": "INTRODUÇÃO AO EMPREENDEDORISMO E INOVAÇÃO",
+    "carater": "Alternativa",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05019",
+    "nome": "AGENTES AUTÔNOMOS E SISTEMAS MULTIAGENTES",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01017",
+    "nome": "APRENDIZADO DE MÁQUINA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01023",
+    "nome": "ARQUITETURA E DESEMPENHO DE BANCO DE DADOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01191",
+    "nome": "ARQUITETURAS AVANÇADAS DE COMPUTADORES",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01146",
+    "nome": "AVALIAÇÃO DE DESEMPENHO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05018",
+    "nome": "BIOLOGIA COMPUTACIONAL",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01205",
+    "nome": "CAD PARA SISTEMAS DIGITAIS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05006",
+    "nome": "CATEGORIAS COMPUTACIONAIS N",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01037",
+    "nome": "COMPUTAÇÃO EVOLUTIVA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01009",
+    "nome": "COMPUTAÇÃO GRÁFICA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01140",
+    "nome": "COMPUTADOR E SOCIEDADE",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01005",
+    "nome": "COMUNICAÇÃO DE DADOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01185",
+    "nome": "CONCEPÇÃO DE CIRCUITOS INTEGRADOS I",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01056",
+    "nome": "DESAFIOS DE PROGRAMAÇÃO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "ECO02254",
+    "nome": "ECONOMIΑ Α",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01001",
+    "nome": "ESPECIFICAÇÃO FORMAL N",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01213",
+    "nome": "FOTOGRAFIA COMPUTACIONAL",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01030",
+    "nome": "FUNDAMENTOS DE VISÃO COMPUTACIONAL",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01016",
+    "nome": "GERÊNCIA E ADMINISTRAÇÃO DE PROJETOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01015",
+    "nome": "GERÊNCIA E APLICAÇÕES EM REDES",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01039",
+    "nome": "HISTÓRIA DA COMPUTAÇÃO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "LET02720",
+    "nome": "INGLÊS INSTRUMENTAL PARA PROCESSAMENTO DE DADOS I",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05004",
+    "nome": "INTELIGÊNCIA ARTIFICIAL AVANÇADA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01049",
+    "nome": "INTRODUÇÃO À PESQUISA EM INFORMÁTICA",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05001",
+    "nome": "LABORATÓRIO DE PROGRAMAÇÃO EM LÓGICA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01022",
+    "nome": "LABORATÓRIO DE SISTEMA DE SOFTWARE",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "EDU03071",
+    "nome": "LÍNGUA BRASILEira DE SINAIS (LIBRAS)",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01215",
+    "nome": "MÉTODOS ÁGEIS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01216",
+    "nome": "MODELAGEM E GERENCIAMENTO DE PROCESSOS DE NEGÓCIO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01008",
+    "nome": "PROGRAMAÇÃO DISTRIBUÍDA E PARALELA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01006",
+    "nome": "PROJETO DE BANCO DE DADOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01021",
+    "nome": "PROJETO DE HIPERDOCUMENTOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01019",
+    "nome": "PROJETO EM COMPUTAÇÃO GRÁFICA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01002",
+    "nome": "PROTOCOLOS DE COMUNICAÇÃO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01034",
+    "nome": "ROBÓTICA II",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01045",
+    "nome": "SEGURANÇA EM SISTEMAS DE COMPUTAÇÃO",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01014",
+    "nome": "SISTEMAS DE BANCO DE DADOS DISTRIBUÍDOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01175",
+    "nome": "SISTEMAS DIGITAIS PARA COMPUTADORES A",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01059",
+    "nome": "SISTEMAS EMBARCADOS",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01038",
+    "nome": "SISTEMAS ESPECIALISTAS N",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01018",
+    "nome": "SISTEMAS OPERACIONAIS DISTRIBUÍDOS E DE REDES",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01217",
+    "nome": "TENDÊNCIAS EM ENGENHARIA DE SOFTWARE",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05003",
+    "nome": "TEORIA DA COMPUTAÇÃO DISTRIBUÍDA",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01214",
+    "nome": "TESTE DE SOFTWARE",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01179",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO I",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01182",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO II",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01188",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO III",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01198",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO IV",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05009",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO IX",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05504",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO V",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05505",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO VI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01054",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO VII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01055",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO VIII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01065",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO X",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01064",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01063",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05011",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XIII",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05012",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XIV",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05014",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XIX",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05013",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XV",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01062",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XVI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01061",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XVII",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01060",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XVIII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05015",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XX",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05016",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXI",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01066",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXII",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01067",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXIII",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01068",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXIV",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01069",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXIX",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05020",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXV",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05021",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXVI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05022",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXVII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF05023",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXVIII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01070",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXX",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01071",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01072",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXII",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF01218",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXIII",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01219",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXIV",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01220",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXV",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01221",
+    "nome": "TÓPICOS ESPECIAIS EM COMPUTAÇÃO XXXVI",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01050",
+    "nome": "TÓPICOS ESPECIAIS EM ENGENHARIA DE COMPUTAÇÃO I",
+    "carater": "Eletiva",
+    "creditos": 4,
+    "carga_horaria": 60
+  },
+  {
+    "codigo": "INF01053",
+    "nome": "TÓPICOS ESPECIAIS EM ENGENHARIA DE COMPUTAÇÃO IV",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05024",
+    "nome": "TÓPICOS ESPECIAIS EM ENGENHARIA DE COMPUTAÇÃO V",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  },
+  {
+    "codigo": "INF05025",
+    "nome": "TÓPICOS ESPECIAIS EM ENGENHARIA DE COMPUTAÇÃO VI",
+    "carater": "Eletiva",
+    "creditos": 2,
+    "carga_horaria": 30
+  }
+]
