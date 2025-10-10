@@ -74,11 +74,21 @@ interface CreateLessonModalProps {
 }
 
 const formatDateToISO = (date: Date): string => {
-  // Para campos @db.Date do Prisma, precisa ser DateTime ISO-8601 completo
+  // Cria uma nova data em UTC para evitar problemas de timezone
+  // Pega ano/mês/dia da data LOCAL e cria em UTC
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T00:00:00.000Z`;
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  console.log('🔍 formatDateToISO - Input:', date.toString());
+  console.log('🔍 formatDateToISO - Extraído:', { year, month, day });
+  
+  const utcDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+  const result = utcDate.toISOString();
+  
+  console.log('🔍 formatDateToISO - Output:', result);
+  
+  return result;
 };
 
 const formatTimeToISO = (date: Date): string => {
@@ -253,10 +263,10 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-base-content/10 sticky top-0 bg-white dark:bg-base-200 z-10">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
               Criar Nova Aula
             </h2>
-            <p className="text-sm text-gray-600 dark:text-base-content/70 mt-1">
+            <p className="text-base text-gray-600 dark:text-base-content/70 mt-1">
               Preencha os dados da aula ou crie aulas recorrentes
             </p>
           </div>
@@ -276,7 +286,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <FiRepeat className="w-5 h-5 text-primary" />
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-base text-gray-900 dark:text-white">
                   Aulas Recorrentes
                 </span>
               </div>
@@ -299,7 +309,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                 }}
               />
             </div>
-            <p className="text-sm text-gray-600 dark:text-base-content/70">
+            <p className="text-base text-gray-600 dark:text-base-content/70">
               Crie múltiplas aulas automaticamente nos mesmos dias da semana
             </p>
           </div>
@@ -307,7 +317,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           {/* Data Inicial */}
           <div>
             <label className="label">
-              <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                 <FiCalendar className="inline w-4 h-4 mr-2" />
                 {isRecurring ? 'Data Inicial *' : 'Data da Aula *'}
               </span>
@@ -322,14 +332,14 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                   dateFormat="dd/MM/yyyy"
                   locale={ptBR}
                   minDate={new Date()}
-                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white"
+                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
                   calendarClassName="bg-white dark:bg-base-200"
                   placeholderText="Selecione a data"
                 />
               )}
             />
             {errors.date && (
-              <p className="text-error text-sm mt-1">{errors.date.message}</p>
+              <p className="text-error text-base mt-1">{errors.date.message}</p>
             )}
           </div>
 
@@ -337,7 +347,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           {isRecurring && (
             <div>
               <label className="label">
-                <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                   Dias da Semana *
                 </span>
               </label>
@@ -348,7 +358,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                     type="button"
                     onClick={() => toggleWeekday(day.value)}
                     className={`
-                      px-3 py-3 rounded-lg font-medium text-sm transition-all
+                      px-3 py-3 rounded-lg font-medium text-base transition-all
                       ${selectedWeekdays.includes(day.value)
                         ? 'bg-primary text-white shadow-md scale-105'
                         : 'bg-gray-100 dark:bg-base-300 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-100'
@@ -361,7 +371,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                 ))}
               </div>
               {errors.recurringWeekdays && (
-                <p className="text-error text-sm mt-1">{errors.recurringWeekdays.message}</p>
+                <p className="text-error text-base mt-1">{errors.recurringWeekdays.message}</p>
               )}
             </div>
           )}
@@ -370,7 +380,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           {isRecurring && (
             <div>
               <label className="label">
-                <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                   Número de Semanas *
                 </span>
               </label>
@@ -379,15 +389,15 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                 {...register('numberOfWeeks', { valueAsNumber: true })}
                 min={1}
                 max={20}
-                className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white"
+                className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
                 placeholder="Ex: 4"
               />
               {errors.numberOfWeeks && (
-                <p className="text-error text-sm mt-1">{errors.numberOfWeeks.message}</p>
+                <p className="text-error text-base mt-1">{errors.numberOfWeeks.message}</p>
               )}
               <div className="alert alert-info mt-2">
                 <FiInfo className="w-5 h-5" />
-                <span className="text-sm">
+                <span className="text-base">
                   Serão criadas{' '}
                   <strong>
                     {selectedWeekdays.length * (watch('numberOfWeeks') || 0)} aulas
@@ -402,7 +412,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">
-                <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                   <FiClock className="inline w-4 h-4 mr-2" />
                   Início *
                 </span>
@@ -421,19 +431,19 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                     dateFormat="HH:mm"
                     timeFormat="HH:mm"
                     locale={ptBR}
-                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white"
+                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
                     placeholderText="00:00"
                   />
                 )}
               />
               {errors.startTime && (
-                <p className="text-error text-sm mt-1">{errors.startTime.message}</p>
+                <p className="text-error text-base mt-1">{errors.startTime.message}</p>
               )}
             </div>
 
             <div>
               <label className="label">
-                <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                   <FiClock className="inline w-4 h-4 mr-2" />
                   Término *
                 </span>
@@ -452,13 +462,13 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                     dateFormat="HH:mm"
                     timeFormat="HH:mm"
                     locale={ptBR}
-                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white"
+                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
                     placeholderText="00:00"
                   />
                 )}
               />
               {errors.endTime && (
-                <p className="text-error text-sm mt-1">{errors.endTime.message}</p>
+                <p className="text-error text-base mt-1">{errors.endTime.message}</p>
               )}
             </div>
           </div>
@@ -466,7 +476,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           {/* Nome (opcional) */}
           <div>
             <label className="label">
-              <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                 Título da Aula (opcional)
               </span>
             </label>
@@ -474,14 +484,14 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
               type="text"
               {...register('name')}
               placeholder="Ex: Aula sobre Estruturas de Dados"
-              className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400"
+              className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
             />
           </div>
 
           {/* Descrição (opcional) */}
           <div>
             <label className="label">
-              <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                 Descrição (opcional)
               </span>
             </label>
@@ -489,7 +499,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
               {...register('description')}
               rows={3}
               placeholder="Descreva o conteúdo da aula..."
-              className="textarea textarea-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400"
+              className="textarea textarea-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
             />
           </div>
 
@@ -498,7 +508,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <FiLock className="w-5 h-5 text-primary" />
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-base text-gray-900 dark:text-white">
                   Exigir Senha para Presença
                 </span>
               </div>
@@ -521,14 +531,14 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
               />
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-base-content/70 mb-3">
+            <p className="text-base text-gray-600 dark:text-base-content/70 mb-3">
               Ao ativar, os alunos precisarão digitar a senha para registrar presença
             </p>
 
             {requirePassword && (
               <div>
                 <label className="label">
-                  <span className="label-text font-medium text-gray-700 dark:text-gray-200">
+                  <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
                     Senha (4-20 caracteres)
                   </span>
                 </label>
@@ -536,15 +546,15 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                   type="text"
                   {...register('attendancePassword')}
                   placeholder="Ex: AULA123"
-                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400"
+                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
                   maxLength={20}
                 />
                 {errors.attendancePassword && (
-                  <p className="text-error text-sm mt-1">
+                  <p className="text-error text-base mt-1">
                     {errors.attendancePassword.message}
                   </p>
                 )}
-                <p className="text-xs text-gray-500 dark:text-base-content/60 mt-2">
+                <p className="text-sm text-gray-500 dark:text-base-content/60 mt-2">
                   💡 Dica: Use uma senha fácil de ditar em aula (ex: códigos simples)
                 </p>
               </div>
@@ -554,7 +564,7 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
           {/* Error Message */}
           {createLessonMutation.isError && (
             <div className="alert alert-error">
-              <span>
+              <span className="text-base">
                 {createLessonMutation.error instanceof Error
                   ? createLessonMutation.error.message
                   : 'Erro ao criar aula(s)'}
@@ -567,14 +577,14 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
             <button
               type="button"
               onClick={handleClose}
-              className="btn btn-ghost flex-1"
+              className="btn-premium-outline flex-1 text-base"
               disabled={createLessonMutation.isPending}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="btn-premium flex-1"
+              className="btn-premium flex-1 text-base"
               disabled={createLessonMutation.isPending}
             >
               {createLessonMutation.isPending ? (
