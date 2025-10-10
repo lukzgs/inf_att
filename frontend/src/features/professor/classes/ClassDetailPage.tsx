@@ -1,23 +1,66 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   FiArrowLeft,
   FiUsers,
   FiClock,
-  FiPlay,
   FiCheckCircle,
-  FiXCircle,
+  FiBookOpen,
+  FiUserCheck,
   FiEdit,
+  FiPlus,
+  FiTrash2,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
 import { formatNameToInitials } from '@/utils/format';
 import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
-import OpenLessonModal from '@/features/professor/lessons/OpenLessonModal';
-import ManualAttendanceForm from '@/features/professor/lessons/ManualAttendanceForm';
+import { CreateLessonModal } from '@/components/professor/CreateLessonModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 type FilterType = 'all' | 'finished' | 'scheduled';
+
+/**
+ * Extrai apenas a parte do horário (HH:mm) de uma string ISO datetime
+ * Backend retorna Time do Prisma como "1970-01-01THH:mm:ss.000Z"
+ */
+const extractTimeFromISO = (isoTime: string): string => {
+  if (!isoTime) return '--:--';
+  try {
+    // Se já for HH:mm, retorna direto
+    if (isoTime.length === 5 && isoTime.includes(':')) {
+      return isoTime;
+    }
+    // Se for ISO completo, extrai HH:mm
+    const date = new Date(isoTime);
+    return date.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'UTC' // Importante: usa UTC porque 1970-01-01 é apenas container
+    });
+  } catch {
+    return '--:--';
+  }
+};
+
+/**
+ * Formata uma data ISO em formato dd/mm usando UTC para evitar problemas de timezone
+ * Backend retorna Date como "2025-10-09T00:00:00.000Z" (meia-noite UTC)
+ */
+const formatDateDDMM = (isoDate: string): string => {
+  if (!isoDate) return '--/--';
+  try {
+    const date = new Date(isoDate);
+    // Usa UTC para extrair dia/mês sem conversão de timezone
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    return `${day}/${month}`;
+  } catch {
+    return '--/--';
+  }
+};
 
 /**
  * ClassDetailPage - Página de detalhes da turma para Professor
@@ -40,23 +83,14 @@ export default function ClassDetailPage() {
 
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
   const [showStudents, setShowStudents] = useState(false);
+  const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false);
+  const [selectedLessons, setSelectedLessons] = useState<Set<number>>(new Set());
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
     className: string;
-  } | null>(null);
-  
-  const [openLessonModalData, setOpenLessonModalData] = useState<{
-    lessonId: number;
-    className: string;
-    lessonDate: string;
-    totalStudents: number;
-  } | null>(null);
-  
-  const [manualAttendanceData, setManualAttendanceData] = useState<{
-    lessonId: number;
-    className: string;
-    lessonDate: string;
   } | null>(null);
 
   // Fetch class data (já inclui lessons e users)
@@ -97,6 +131,8 @@ export default function ClassDetailPage() {
 
   // Filter lessons
   const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  
   const filteredLessons = lessonsData?.filter(lesson => {
     if (lessonFilter === 'finished') {
       return lesson.closedAt !== null;
@@ -107,10 +143,119 @@ export default function ClassDetailPage() {
     return true;
   }) || [];
 
-  // Sort lessons by date (most recent first)
-  const sortedLessons = [...filteredLessons].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  // Sort lessons by proximity (upcoming first, then most recent past)
+  const sortedLessons = [...filteredLessons].sort((a, b) => {
+    // Cria Date completo com data + horário para comparação precisa
+    // Extrai ano/mês/dia em UTC para preservar a data correta
+    const dateA = new Date(a.date);
+    const yearA = dateA.getUTCFullYear();
+    const monthA = dateA.getUTCMonth();
+    const dayA = dateA.getUTCDate();
+    const startTimeA = extractTimeFromISO(a.startTime);
+    const [hourA, minA] = startTimeA.split(':').map(Number);
+    // Cria em timezone LOCAL para comparar com now (que é local)
+    const dateTimeA = new Date(yearA, monthA, dayA, hourA, minA, 0, 0);
+    
+    const dateB = new Date(b.date);
+    const yearB = dateB.getUTCFullYear();
+    const monthB = dateB.getUTCMonth();
+    const dayB = dateB.getUTCDate();
+    const startTimeB = extractTimeFromISO(b.startTime);
+    const [hourB, minB] = startTimeB.split(':').map(Number);
+    const dateTimeB = new Date(yearB, monthB, dayB, hourB, minB, 0, 0);
+    
+    const timeA = dateTimeA.getTime();
+    const timeB = dateTimeB.getTime();
+    const nowTime = now.getTime();
+
+    // Se ambas são futuras, ordena pela mais próxima (ascendente)
+    if (timeA >= nowTime && timeB >= nowTime) {
+      return timeA - timeB;
+    }
+    
+    // Se ambas são passadas, ordena pela mais recente (descendente)
+    if (timeA < nowTime && timeB < nowTime) {
+      return timeB - timeA;
+    }
+    
+    // Se uma é futura e outra passada, futura vem primeiro
+    return timeA >= nowTime ? -1 : 1;
+  });
+
+  // Funções de seleção
+  const toggleLessonSelection = (lessonId: number) => {
+    setSelectedLessons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(lessonId)) {
+        newSet.delete(lessonId);
+      } else {
+        newSet.add(lessonId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLessons.size === sortedLessons.length) {
+      setSelectedLessons(new Set());
+    } else {
+      setSelectedLessons(new Set(sortedLessons.map(l => l.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLessons.size === 0) return;
+
+    setIsDeletingMultiple(true);
+    const token = localStorage.getItem('authToken');
+    let deletedCount = 0;
+    let errorCount = 0;
+
+    try {
+      // Deleta todas as aulas selecionadas
+      await Promise.all(
+        Array.from(selectedLessons).map(async (lessonId) => {
+          try {
+            const response = await fetch(`http://localhost:3000/aulas/${lessonId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
+
+            if (response.ok) {
+              deletedCount++;
+            } else {
+              errorCount++;
+            }
+          } catch (error) {
+            errorCount++;
+          }
+        })
+      );
+
+      // Atualiza a lista
+      await queryClient.invalidateQueries({ queryKey: ['classes', classId] });
+      await queryClient.refetchQueries({ queryKey: ['classes', classId] });
+
+      // Limpa seleção
+      setSelectedLessons(new Set());
+      setShowDeleteConfirm(false);
+
+      // Mostra resultado
+      if (deletedCount > 0) {
+        toast.success(`${deletedCount} aula(s) deletada(s) com sucesso!`);
+      }
+      if (errorCount > 0) {
+        toast.error(`Erro ao deletar ${errorCount} aula(s)`);
+      }
+    } catch (error) {
+      console.error('Erro ao deletar aulas:', error);
+      toast.error('Erro ao deletar aulas selecionadas');
+    } finally {
+      setIsDeletingMultiple(false);
+    }
+  };
 
   const isLoading = isLoadingClass || isLoadingLessons;
 
@@ -161,7 +306,7 @@ export default function ClassDetailPage() {
       </div>
 
       {/* Lessons List */}
-      <section className="mt-12">
+      <section className="mt-12 bg-white dark:bg-base-200 rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="section-title">Aulas</h2>
@@ -169,25 +314,33 @@ export default function ClassDetailPage() {
               {lessonsData?.length || 0} aula(s) total
             </p>
           </div>
+          <button
+            onClick={() => setIsCreateLessonModalOpen(true)}
+            className="btn-premium gap-2"
+          >
+            <FiPlus className="w-5 h-5" />
+            Nova Aula
+          </button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setLessonFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              lessonFilter === 'all'
-                ? 'bg-primary text-white shadow-lg'
-                : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
-            }`}
-          >
-            Todas as aulas
-          </button>
-          <button
-            onClick={() => setLessonFilter('finished')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              lessonFilter === 'finished'
-                ? 'bg-primary text-white shadow-lg'
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setLessonFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                lessonFilter === 'all'
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
+              }`}
+            >
+              Todas as aulas
+            </button>
+            <button
+              onClick={() => setLessonFilter('finished')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                lessonFilter === 'finished'
+                  ? 'bg-primary text-white shadow-lg'
                 : 'bg-white dark:bg-base-200 text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-300'
             }`}
           >
@@ -203,6 +356,46 @@ export default function ClassDetailPage() {
           >
             Agendadas
           </button>
+          </div>
+
+          {/* Controles de seleção - Alinhados à direita */}
+          <div className="flex items-center gap-3">
+            {sortedLessons.length > 0 && (
+              <>
+                {/* Contador de selecionados */}
+                {selectedLessons.size > 0 && (
+                  <>
+                    <span className="text-sm font-medium text-gray-700 dark:text-base-content">
+                      {selectedLessons.size} selecionada(s)
+                    </span>
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={isDeletingMultiple}
+                      className="btn btn-error btn-sm gap-2"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                      Deletar
+                    </button>
+                  </>
+                )}
+
+                {/* Checkbox "Selecionar todas" alinhado à direita */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 dark:text-base-content/70">
+                    Selecionar todas
+                  </span>
+                  <div className="w-10 flex justify-end" style={{ paddingRight: '1.25rem' }}>
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary checkbox-lg"
+                      checked={selectedLessons.size === sortedLessons.length && sortedLessons.length > 0}
+                      onChange={toggleSelectAll}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Lessons List */}
@@ -224,10 +417,26 @@ export default function ClassDetailPage() {
           ) : (
             <div>
               {sortedLessons.map((lesson) => {
-                const lessonDate = new Date(lesson.date);
+                // Extrai data em UTC para preservar o dia correto
+                const lessonDateUTC = new Date(lesson.date);
+                const year = lessonDateUTC.getUTCFullYear();
+                const month = lessonDateUTC.getUTCMonth();
+                const day = lessonDateUTC.getUTCDate();
+                
+                // Extrai horários
+                const startTimeStr = extractTimeFromISO(lesson.startTime);
+                const endTimeStr = extractTimeFromISO(lesson.endTime);
+                const [startHour, startMin] = startTimeStr.split(':').map(Number);
+                const [endHour, endMin] = endTimeStr.split(':').map(Number);
+                
+                // Cria datetime completo
+                const startTime = new Date(year, month, day, startHour, startMin, 0, 0);
+                const endTime = new Date(year, month, day, endHour, endMin, 0, 0);
+                const now = new Date();
+                
                 const isToday = lesson.date.startsWith(today);
-                const isFuture = lessonDate > new Date() || isToday;
-                const isFinished = lesson.closedAt !== null;
+                const isFuture = startTime > now;
+                const isFinished = now > endTime; // Concluída quando passou o horário
 
                 return (
                   <div key={lesson.id} className="list-card-item">
@@ -235,21 +444,21 @@ export default function ClassDetailPage() {
                     <div className="list-card-item-icon">
                       <div className={`w-full h-full rounded-xl flex items-center justify-center ${
                         lesson.isOpen 
-                          ? 'bg-success'
+                          ? 'bg-primary'
                           : isFinished
-                          ? 'bg-info'
+                          ? 'bg-success'
                           : isFuture
                           ? 'bg-warning'
                           : 'bg-gray-400'
                       }`}>
                         {lesson.isOpen ? (
-                          <FiPlay className="w-6 h-6 text-white" />
+                          <FiBookOpen className="w-6 h-6 text-white" />
                         ) : isFinished ? (
                           <FiCheckCircle className="w-6 h-6 text-white" />
                         ) : isFuture ? (
                           <FiClock className="w-6 h-6 text-white" />
                         ) : (
-                          <FiXCircle className="w-6 h-6 text-white" />
+                          <FiClock className="w-6 h-6 text-white" />
                         )}
                       </div>
                     </div>
@@ -257,18 +466,14 @@ export default function ClassDetailPage() {
                     {/* Lesson Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
-                          {lessonDate.toLocaleDateString('pt-BR', { 
-                            weekday: 'long', 
-                            day: '2-digit', 
-                            month: 'short',
-                            year: 'numeric'
-                          })}
+                        {/* Nome da Aula como título principal */}
+                        <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                          {lesson.name || 'Aula sem título'}
                         </p>
                         {lesson.isOpen && (
-                          <span className="badge-premium badge-premium-success">
-                            <span className="w-2 h-2 rounded-full bg-success animate-pulse mr-1" />
-                            Aberta
+                          <span className="badge-premium badge-premium-primary">
+                            <FiBookOpen className="w-3 h-3 mr-1" />
+                            Em andamento
                           </span>
                         )}
                         {isToday && !lesson.isOpen && (
@@ -277,8 +482,9 @@ export default function ClassDetailPage() {
                           </span>
                         )}
                       </div>
+                      {/* Data e horário como informação secundária */}
                       <p className="text-sm text-gray-600 dark:text-base-content/70">
-                        {lesson.startTime?.substring(0, 5)} - {lesson.endTime?.substring(0, 5)}
+                        {formatDateDDMM(lesson.date)} • {extractTimeFromISO(lesson.startTime)} - {extractTimeFromISO(lesson.endTime)}
                         {lesson.description && ` • ${lesson.description}`}
                         {lesson.closedAt && (
                           <span className="ml-2">
@@ -292,47 +498,97 @@ export default function ClassDetailPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 flex-shrink-0">
-                      {lesson.isOpen ? (
-                        <button 
-                          onClick={() => setOpenLessonModalData({
-                            lessonId: lesson.id,
-                            className: `${classData.code} - ${classData.subject?.name}`,
-                            lessonDate: lesson.date,
-                            totalStudents: students.length,
-                          })}
-                          className="btn-premium-outline !px-4 !py-2 text-sm bg-error/10 border-error text-error hover:bg-error hover:text-white"
-                        >
-                          Fechar Aula
-                        </button>
-                      ) : (
-                        <>
-                          {isFuture && !isFinished && (
-                            <button 
-                              onClick={() => setOpenLessonModalData({
+                    <div className="flex gap-2 flex-shrink-0 ml-auto">
+                      {/* Status Badge com lógica automática */}
+                      {(() => {
+                        const now = new Date();
+                        
+                        // Extrai data em UTC para preservar o dia correto
+                        const lessonDateUTC = new Date(lesson.date);
+                        const year = lessonDateUTC.getUTCFullYear();
+                        const month = lessonDateUTC.getUTCMonth();
+                        const day = lessonDateUTC.getUTCDate();
+                        
+                        // Extrai HH:mm do formato ISO
+                        const startTimeStr = extractTimeFromISO(lesson.startTime);
+                        const endTimeStr = extractTimeFromISO(lesson.endTime);
+                        const [startHour, startMin] = startTimeStr.split(':').map(Number);
+                        const [endHour, endMin] = endTimeStr.split(':').map(Number);
+                        
+                        // Cria datetime em timezone LOCAL para comparar com now
+                        // Usa ano/mês/dia extraídos de UTC, mas cria em timezone local
+                        const startTime = new Date(year, month, day, startHour, startMin, 0, 0);
+                        const endTime = new Date(year, month, day, endHour, endMin, 0, 0);
+
+                        // Presença aberta (durante o horário)
+                        if (now >= startTime && now <= endTime && !lesson.closedAt) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <FiUserCheck className="w-6 h-6 text-primary" />
+                              <button
+                                onClick={() => setLessonDetailModalData({
+                                  lessonId: lesson.id,
+                                  className: `${classData.code} - ${classData.subject?.name}`,
+                                })}
+                                className="btn-premium-outline !px-4 !py-2 text-sm w-32 gap-2"
+                              >
+                                <FiEdit className="w-4 h-4" />
+                                Gerenciar
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        // Aula encerrada (horário passou)
+                        if (isFinished) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <FiCheckCircle className="w-6 h-6 text-success" />
+                              <button
+                                onClick={() => setLessonDetailModalData({
+                                  lessonId: lesson.id,
+                                  className: `${classData.code} - ${classData.subject?.name}`,
+                                })}
+                                className="btn-premium-outline !px-4 !py-2 text-sm w-32 gap-2"
+                              >
+                                <FiEdit className="w-4 h-4" />
+                                Detalhes
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        // Aula agendada (ainda não começou)
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-warning gap-2">
+                              <FiClock className="w-4 h-4" />
+                              Abre às {startTimeStr}
+                            </span>
+                            <button
+                              onClick={() => setLessonDetailModalData({
                                 lessonId: lesson.id,
                                 className: `${classData.code} - ${classData.subject?.name}`,
-                                lessonDate: lesson.date,
-                                totalStudents: students.length,
                               })}
-                              className="btn-premium !px-4 !py-2 text-sm"
+                              className="btn-premium-outline !px-4 !py-2 text-sm w-32 gap-2"
                             >
-                              <FiPlay className="w-4 h-4" />
-                              Abrir Aula
+                              <FiEdit className="w-4 h-4" />
+                              Gerenciar
                             </button>
-                          )}
-                          <button
-                            onClick={() => setLessonDetailModalData({
-                              lessonId: lesson.id,
-                              className: `${classData.code} - ${classData.subject?.name}`,
-                            })}
-                            className="btn-premium-outline !px-4 !py-2 text-sm"
-                          >
-                            <FiEdit className="w-4 h-4" />
-                            Gerenciar Aula
-                          </button>
-                        </>
-                      )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Checkbox de seleção */}
+                    <div className="flex-shrink-0 w-10 flex justify-end">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-primary checkbox-lg"
+                        checked={selectedLessons.has(lesson.id)}
+                        onChange={() => toggleLessonSelection(lesson.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </div>
                   </div>
                 );
@@ -343,95 +599,77 @@ export default function ClassDetailPage() {
       </section>
 
       {/* Students List - Collapsible */}
-      <section>
-        <div 
-          className="flex items-center justify-between p-4 bg-white dark:bg-base-200 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => setShowStudents(!showStudents)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
-              <FiUsers className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Alunos Matriculados
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-base-content/70">
-                {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-          <div className={`transition-transform ${showStudents ? 'rotate-180' : ''}`}>
-            <svg className="w-6 h-6 text-gray-600 dark:text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-
-        {showStudents && (
-          <div className="list-card mt-4 animate-fade-in-up">
-            {students.length === 0 ? (
-              <div className="empty-state">
-                <div className="text-6xl mb-4">👥</div>
-                <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
-                <p className="empty-state-description">
-                  Ainda não há alunos matriculados nesta turma.
+      <section className="mt-8">
+        <div className="bg-white dark:bg-base-200 rounded-xl shadow-sm">
+          <div 
+            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-base-300 transition-colors rounded-t-xl"
+            onClick={() => setShowStudents(!showStudents)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
+                <FiUsers className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Alunos Matriculados
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-base-content/70">
+                  {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
                 </p>
               </div>
-            ) : (
-              <div>
-                {studentsWithStats.map((student) => (
-                  <div key={student.userId} className="list-card-item">
-                    {/* Avatar */}
-                    <div className="list-card-item-icon">
-                      <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
-                        {formatNameToInitials(student.user?.name || 'N/A')}
-                      </div>
-                    </div>
-
-                    {/* Student Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
-                        {student.user?.name || 'Nome não disponível'}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-base-content/70">
-                        {student.totalAttendances} de {student.totalLessons} presenças registradas
-                      </p>
-                    </div>
-
-                    {/* Frequency Badge */}
-                    <div className="flex-shrink-0">
-                      <FrequencyBadge percentage={student.attendancePercentage} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            </div>
+            <div className={`transition-transform ${showStudents ? 'rotate-180' : ''}`}>
+              <svg className="w-6 h-6 text-gray-600 dark:text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
-        )}
+
+          {showStudents && (
+            <div className="p-4 border-t border-gray-200 dark:border-base-content/10">
+              <div className="list-card animate-fade-in-up">
+                {students.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="text-6xl mb-4">👥</div>
+                    <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
+                    <p className="empty-state-description">
+                      Ainda não há alunos matriculados nesta turma.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    {studentsWithStats.map((student) => (
+                      <div key={student.userId} className="list-card-item">
+                        {/* Avatar */}
+                        <div className="list-card-item-icon">
+                          <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
+                            {formatNameToInitials(student.user?.name || 'N/A')}
+                          </div>
+                        </div>
+
+                        {/* Student Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                            {student.user?.name || 'Nome não disponível'}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-base-content/70">
+                            {student.totalAttendances} de {student.totalLessons} presenças registradas
+                          </p>
+                        </div>
+
+                        {/* Frequency Badge */}
+                        <div className="flex-shrink-0">
+                          <FrequencyBadge percentage={student.attendancePercentage} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
-
-      {/* Open Lesson Modal */}
-      {openLessonModalData && (
-        <OpenLessonModal
-          lessonId={openLessonModalData.lessonId}
-          className={openLessonModalData.className}
-          lessonDate={openLessonModalData.lessonDate}
-          totalStudents={openLessonModalData.totalStudents}
-          onClose={() => setOpenLessonModalData(null)}
-        />
-      )}
-
-      {/* Manual Attendance Form */}
-      {manualAttendanceData && (
-        <ManualAttendanceForm
-          lessonId={manualAttendanceData.lessonId}
-          classId={classId}
-          className={manualAttendanceData.className}
-          lessonDate={manualAttendanceData.lessonDate}
-          onClose={() => setManualAttendanceData(null)}
-        />
-      )}
 
       {/* Lesson Detail Modal */}
       {lessonDetailModalData && (
@@ -441,12 +679,35 @@ export default function ClassDetailPage() {
           classId={classId}
           className={lessonDetailModalData.className}
           onClose={() => setLessonDetailModalData(null)}
-          onUpdate={() => {
-            queryClient.invalidateQueries({ queryKey: ['classes', classId] });
-            queryClient.invalidateQueries({ queryKey: ['lessons', 'class', classId] });
+          onUpdate={async () => {
+            // Invalida as queries e força refetch imediato
+            await queryClient.invalidateQueries({ queryKey: ['classes', classId] });
+            await queryClient.refetchQueries({ queryKey: ['classes', classId] });
           }}
         />
       )}
+
+      {/* Create Lesson Modal */}
+      {isCreateLessonModalOpen && (
+        <CreateLessonModal
+          isOpen={isCreateLessonModalOpen}
+          onClose={() => setIsCreateLessonModalOpen(false)}
+          classId={classId}
+        />
+      )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteSelected}
+        title="Deletar Aulas"
+        message={`Tem certeza que deseja deletar ${selectedLessons.size} aula(s)? Esta ação não pode ser desfeita.`}
+        confirmText="Deletar"
+        cancelText="Cancelar"
+        confirmButtonClass="btn-error"
+        isLoading={isDeletingMultiple}
+      />
     </div>
   );
 }
