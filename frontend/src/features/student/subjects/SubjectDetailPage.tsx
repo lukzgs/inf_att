@@ -8,6 +8,29 @@ import { formatDate } from '@/utils/date/formatDate';
 type FilterType = 'all' | 'absences';
 
 /**
+ * Extrai apenas a parte do horário (HH:mm) de uma string ISO datetime
+ * Backend retorna Time do Prisma como "1970-01-01THH:mm:ss.000Z"
+ */
+const extractTimeFromISO = (isoTime: string): string => {
+  if (!isoTime) return '--:--';
+  try {
+    // Se já for HH:mm, retorna direto
+    if (isoTime.length === 5 && isoTime.includes(':')) {
+      return isoTime;
+    }
+    // Se for ISO completo, extrai HH:mm
+    const date = new Date(isoTime);
+    return date.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'UTC' // Importante: usa UTC porque 1970-01-01 é apenas container
+    });
+  } catch {
+    return '--:--';
+  }
+};
+
+/**
  * Página de detalhes de uma disciplina do aluno
  * 
  * Features:
@@ -292,7 +315,7 @@ export default function SubjectDetailPage() {
                         <span>•</span>
                         <div className="flex items-center gap-1">
                           <FiClock className="w-3.5 h-3.5" />
-                          <span>{lesson.startTime} - {lesson.endTime}</span>
+                          <span>{extractTimeFromISO(lesson.startTime)} - {extractTimeFromISO(lesson.endTime)}</span>
                         </div>
                       </div>
                       
