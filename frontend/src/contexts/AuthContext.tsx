@@ -31,8 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const response = await api.get<User>('/auth/profile');
           setUser(response.data);
         } catch (error) {
-          console.error('Failed to fetch profile with stored token:', error);
+          // Token inválido ou expirado - limpar silenciosamente
+          // (401 é esperado quando não há sessão válida)
           localStorage.removeItem('authToken');
+          delete api.defaults.headers.common['Authorization'];
           setUser(null);
         }
       }
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to fetch user profile after login", error);
       localStorage.removeItem('authToken');
+      delete api.defaults.headers.common['Authorization'];
       setUser(null);
     }
   }, []);

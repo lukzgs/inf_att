@@ -390,7 +390,7 @@ export function LessonDetailModal({
             <div className="flex-1">
               {/* Título: Nome da Aula */}
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {lessonData?.name || 'Aula sem título'}
+                {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
               </h3>
               
               {/* Data e Horário */}

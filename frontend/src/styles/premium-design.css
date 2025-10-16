@@ -210,7 +210,7 @@
 }
 
 .list-card-item {
-  @apply flex items-center gap-5 p-5
+  @apply flex items-center gap-3 sm:gap-5 p-3 sm:p-5
          border-b border-gray-100 dark:border-base-300
          last:border-b-0
          transition-colors duration-200
@@ -218,7 +218,7 @@
 }
 
 .list-card-item-icon {
-  @apply w-14 h-14 rounded-xl flex items-center justify-center
+  @apply w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center
          flex-shrink-0;
 }
 
@@ -523,4 +523,30 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.6s ease-out;
+}
+
+/* ========================================
+   CUSTOM CHECKBOX PRIMARY
+   ======================================== */
+
+.checkbox-custom-primary {
+  @apply w-6 h-6 rounded border-2 
+         appearance-none cursor-pointer
+         transition-all duration-200;
+  border-color: hsl(var(--primary));
+  background-color: transparent;
+}
+
+.checkbox-custom-primary:hover {
+  @apply shadow-md;
+  border-color: hsl(var(--primary) / 0.8);
+}
+
+.checkbox-custom-primary:checked {
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
