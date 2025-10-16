@@ -4,23 +4,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   FiArrowLeft,
-  FiUsers,
-  FiClock,
-  FiCheckCircle,
-  FiBookOpen,
-  FiUserCheck,
-  FiEdit,
   FiPlus,
-  FiTrash2,
-  FiFilter,
   FiChevronDown,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
 import { formatNameToInitials } from '@/utils/format';
-import { FrequencyBadge } from '@/components/ui/FrequencyBadge';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import { CreateLessonModal } from '@/components/professor/CreateLessonModal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { LessonCard } from '@/components/lessons/LessonCard';
 
 type FilterType = 'all' | 'finished' | 'scheduled';
 
@@ -48,21 +39,9 @@ const extractTimeFromISO = (isoTime: string): string => {
 };
 
 /**
- * Formata uma data ISO em formato dd/mm usando UTC para evitar problemas de timezone
- * Backend retorna Date como "2025-10-09T00:00:00.000Z" (meia-noite UTC)
+ * Extrai apenas a parte do horário (HH:mm) de uma string ISO datetime
+ * Backend retorna Time do Prisma como "1970-01-01THH:mm:ss.000Z"
  */
-const formatDateDDMM = (isoDate: string): string => {
-  if (!isoDate) return '--/--';
-  try {
-    const date = new Date(isoDate);
-    // Usa UTC para extrair dia/mês sem conversão de timezone
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    return `${day}/${month}`;
-  } catch {
-    return '--/--';
-  }
-};
 
 /**
  * ClassDetailPage - Página de detalhes da turma para Professor
@@ -86,9 +65,6 @@ export default function ClassDetailPage() {
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
   const [showStudents, setShowStudents] = useState(false);
   const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false);
-  const [selectedLessons, setSelectedLessons] = useState<Set<number>>(new Set());
-  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
@@ -146,7 +122,6 @@ export default function ClassDetailPage() {
     : 0;
 
   // Filter lessons
-  const today = new Date().toISOString().split('T')[0];
   const now = new Date();
   
   const filteredLessons = lessonsData?.filter(lesson => {
@@ -198,80 +173,7 @@ export default function ClassDetailPage() {
     return timeA >= nowTime ? -1 : 1;
   });
 
-  // Funções de seleção
-  const toggleLessonSelection = (lessonId: number) => {
-    setSelectedLessons(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(lessonId)) {
-        newSet.delete(lessonId);
-      } else {
-        newSet.add(lessonId);
-      }
-      return newSet;
-    });
-  };
 
-  const toggleSelectAll = () => {
-    if (selectedLessons.size === sortedLessons.length) {
-      setSelectedLessons(new Set());
-    } else {
-      setSelectedLessons(new Set(sortedLessons.map(l => l.id)));
-    }
-  };
-
-  const handleDeleteSelected = async () => {
-    if (selectedLessons.size === 0) return;
-
-    setIsDeletingMultiple(true);
-    const token = localStorage.getItem('authToken');
-    let deletedCount = 0;
-    let errorCount = 0;
-
-    try {
-      // Deleta todas as aulas selecionadas
-      await Promise.all(
-        Array.from(selectedLessons).map(async (lessonId) => {
-          try {
-            const response = await fetch(`http://localhost:3000/aulas/${lessonId}`, {
-              method: 'DELETE',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-
-            if (response.ok) {
-              deletedCount++;
-            } else {
-              errorCount++;
-            }
-          } catch (error) {
-            errorCount++;
-          }
-        })
-      );
-
-      // Atualiza a lista
-      await queryClient.invalidateQueries({ queryKey: ['classes', classId] });
-      await queryClient.refetchQueries({ queryKey: ['classes', classId] });
-
-      // Limpa seleção
-      setSelectedLessons(new Set());
-      setShowDeleteConfirm(false);
-
-      // Mostra resultado
-      if (deletedCount > 0) {
-        toast.success(`${deletedCount} aula(s) deletada(s) com sucesso!`);
-      }
-      if (errorCount > 0) {
-        toast.error(`Erro ao deletar ${errorCount} aula(s)`);
-      }
-    } catch (error) {
-      console.error('Erro ao deletar aulas:', error);
-      toast.error('Erro ao deletar aulas selecionadas');
-    } finally {
-      setIsDeletingMultiple(false);
-    }
-  };
 
   const isLoading = isLoadingClass || isLoadingLessons;
 
@@ -326,45 +228,45 @@ export default function ClassDetailPage() {
         </div>
       </div>
 
-      {/* Lessons List */}
-      <section className="bg-white dark:bg-base-100 rounded-2xl border border-gray-200 dark:border-base-300 shadow-md overflow-hidden">
-        {/* Header: Título e Botão Nova Aula */}
-        <div className="flex items-center justify-between p-3 sm:p-5 border-b border-gray-100 dark:border-base-300">
-          <div className="min-w-0">
-            <h2 className="section-title mb-0 text-xl sm:text-3xl md:text-4xl">Aulas</h2>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {lessonsData?.length || 0} aula(s) total
-            </p>
+      {/* Lessons Section */}
+      <section className="mt-8">
+        <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
+          {/* Header: Título e Botão Nova Aula */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-0">
+                Aulas
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {lessonsData?.length || 0} aula(s) cadastrada(s)
+              </p>
+            </div>
+            <button
+              onClick={() => setIsCreateLessonModalOpen(true)}
+              className="btn-premium gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform flex-shrink-0"
+            >
+              <FiPlus className="w-5 h-5 flex-shrink-0" />
+              <span className="hidden sm:inline">Nova Aula</span>
+            </button>
           </div>
-          <button
-            onClick={() => setIsCreateLessonModalOpen(true)}
-            className="btn-premium gap-2 text-sm sm:text-base p-2 sm:px-6 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform flex-shrink-0 sm:w-44 justify-center"
-          >
-            <FiPlus className="w-5 h-5 flex-shrink-0" />
-            <span className="hidden sm:inline">Nova Aula</span>
-          </button>
-        </div>
 
-        {/* Filtro e Controles de Seleção */}
-        <div className="flex items-center justify-end p-3 sm:p-5 border-b border-gray-100 dark:border-base-300">
-          {/* Dropdown de Filtro - Alinhado à direita */}
-          <div className="relative filter-dropdown">
+          {/* Filtro - Mais limpo */}
+          <div className="flex items-center gap-2 sm:gap-3 mb-6">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filtrar:</span>
+            <div className="relative">
             <button
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="btn-premium gap-2 text-sm sm:text-base p-2 sm:px-6 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform sm:w-44 justify-center"
+              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-base-300 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors font-medium"
             >
-              <FiFilter className="w-5 h-5 flex-shrink-0" />
-              <span className="hidden sm:inline">
-                {lessonFilter === 'all' && 'Todas'}
-                {lessonFilter === 'finished' && 'Realizadas'}
-                {lessonFilter === 'scheduled' && 'Agendadas'}
-              </span>
-              <FiChevronDown className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+              {lessonFilter === 'all' && 'Todas'}
+              {lessonFilter === 'finished' && 'Realizadas'}
+              {lessonFilter === 'scheduled' && 'Agendadas'}
+              <FiChevronDown className={`w-4 h-4 inline ml-2 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Dropdown Menu - Alinhado à direita */}
+            {/* Dropdown Menu */}
             {showFilterDropdown && (
-              <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-base-100 border border-gray-200 dark:border-base-300 rounded-lg shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-base-100 border border-gray-200 dark:border-base-300 rounded-lg shadow-lg z-10 overflow-hidden">
                 <button
                   onClick={() => {
                     setLessonFilter('all');
@@ -409,69 +311,24 @@ export default function ClassDetailPage() {
           </div>
         </div>
 
-        {/* Lessons List */}
-        <div className="list-card !border-0 !shadow-none !rounded-none">
-          {sortedLessons.length === 0 ? (
-            <div className="empty-state">
-              <div className="text-6xl mb-4">📅</div>
-              <h3 className="empty-state-title">
-                {lessonFilter === 'all' && 'Nenhuma aula cadastrada'}
-                {lessonFilter === 'finished' && 'Nenhuma aula realizada'}
-                {lessonFilter === 'scheduled' && 'Nenhuma aula agendada'}
-              </h3>
-              <p className="empty-state-description">
-                {lessonFilter === 'all' && 'Ainda não há aulas cadastradas para esta turma.'}
-                {lessonFilter === 'finished' && 'Ainda não há aulas realizadas.'}
-                {lessonFilter === 'scheduled' && 'Não há aulas agendadas no momento.'}
-              </p>
-            </div>
-          ) : (
-            <div>
-              {/* Header com checkbox Selecionar Todas */}
-              {sortedLessons.length > 0 && (
-                <div className="flex items-center justify-end gap-4 sm:gap-6 p-3 sm:p-5 border-b border-gray-100 dark:border-base-300">
-                  {selectedLessons.size > 0 && (
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      disabled={isDeletingMultiple}
-                      className="btn-premium-outline gap-2 text-sm sm:text-base p-2 sm:px-6 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform sm:w-44 justify-center bg-red-500 hover:bg-red-600 text-white border-red-500"
-                    >
-                      <FiTrash2 className="w-5 h-5 flex-shrink-0" />
-                      <span className="hidden sm:inline">Deletar</span>
-                    </button>
-                  )}
-                  <input
-                    type="checkbox"
-                    className="checkbox-custom-primary"
-                    checked={selectedLessons.size === sortedLessons.length && sortedLessons.length > 0}
-                    onChange={toggleSelectAll}
-                    title="Selecionar todas"
-                  />
-                </div>
-              )}
-
+        {/* Lessons List - Grid Layout */}
+        {sortedLessons.length === 0 ? (
+          <div className="empty-state">
+            <div className="text-6xl mb-4">📅</div>
+            <h3 className="empty-state-title">
+              {lessonFilter === 'all' && 'Nenhuma aula cadastrada'}
+              {lessonFilter === 'finished' && 'Nenhuma aula realizada'}
+              {lessonFilter === 'scheduled' && 'Nenhuma aula agendada'}
+            </h3>
+            <p className="empty-state-description">
+              {lessonFilter === 'all' && 'Ainda não há aulas cadastradas para esta turma.'}
+              {lessonFilter === 'finished' && 'Ainda não há aulas realizadas.'}
+              {lessonFilter === 'scheduled' && 'Não há aulas agendadas no momento.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
               {sortedLessons.map((lesson, index) => {
-                // Extrai data em UTC para preservar o dia correto
-                const lessonDateUTC = new Date(lesson.date);
-                const year = lessonDateUTC.getUTCFullYear();
-                const month = lessonDateUTC.getUTCMonth();
-                const day = lessonDateUTC.getUTCDate();
-                
-                // Extrai horários
-                const startTimeStr = extractTimeFromISO(lesson.startTime);
-                const endTimeStr = extractTimeFromISO(lesson.endTime);
-                const [startHour, startMin] = startTimeStr.split(':').map(Number);
-                const [endHour, endMin] = endTimeStr.split(':').map(Number);
-                
-                // Cria datetime completo
-                const startTime = new Date(year, month, day, startHour, startMin, 0, 0);
-                const endTime = new Date(year, month, day, endHour, endMin, 0, 0);
-                const now = new Date();
-                
-                const isToday = lesson.date.startsWith(today);
-                const isFuture = startTime > now;
-                const isFinished = now > endTime; // Concluída quando passou o horário
-
                 const handleLessonClick = () => {
                   setLessonDetailModalData({
                     lessonId: lesson.id,
@@ -479,163 +336,42 @@ export default function ClassDetailPage() {
                   });
                 };
 
-                return (
-                  <div 
-                    key={lesson.id} 
-                    className="list-card-item sm:cursor-default cursor-pointer active:bg-gray-200 dark:active:bg-base-300 sm:active:bg-transparent"
-                    onClick={(e) => {
-                      // No mobile, clica no card inteiro (exceto no checkbox)
-                      if (window.innerWidth < 640 && !(e.target as HTMLElement).closest('input[type="checkbox"]')) {
-                        handleLessonClick();
+                const handleDeleteLesson = async () => {
+                  const confirmed = window.confirm(
+                    `Tem certeza que deseja deletar a aula "${lesson.name || 'Sem nome'}"? Esta ação não pode ser desfeita.`
+                  );
+
+                  if (confirmed) {
+                    try {
+                      const token = localStorage.getItem('authToken');
+                      const response = await fetch(`http://localhost:3000/aulas/${lesson.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                        },
+                      });
+
+                      if (response.ok) {
+                        toast.success('Aula deletada com sucesso!');
+                        await queryClient.refetchQueries({ queryKey: ['classes', classId] });
+                      } else {
+                        toast.error('Erro ao deletar aula');
                       }
-                    }}
-                  >
-                    {/* Status Icon */}
-                    <div className="list-card-item-icon">
-                      <div className={`w-full h-full rounded-xl flex items-center justify-center ${
-                        lesson.isOpen 
-                          ? 'bg-primary'
-                          : isFinished
-                          ? 'bg-success'
-                          : isFuture
-                          ? 'bg-warning'
-                          : 'bg-gray-400'
-                      }`}>
-                        {lesson.isOpen ? (
-                          <FiBookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        ) : isFinished ? (
-                          <FiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        ) : isFuture ? (
-                          <FiClock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        ) : (
-                          <FiClock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        )}
-                      </div>
-                    </div>
+                    } catch (error) {
+                      toast.error('Erro ao deletar aula');
+                    }
+                  }
+                };
 
-                    {/* Lesson Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {/* Nome da Aula como título principal */}
-                        <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate">
-                          {lesson.name || `Aula ${index + 1}`}
-                        </p>
-                        {lesson.isOpen && (
-                          <span className="badge-premium badge-premium-primary text-xs sm:text-sm flex-shrink-0">
-                            <FiBookOpen className="w-3 h-3 mr-1" />
-                            <span className="hidden sm:inline">Em andamento</span>
-                          </span>
-                        )}
-                        {isToday && !lesson.isOpen && (
-                          <span className="badge-premium badge-premium-warning text-xs sm:text-sm flex-shrink-0">
-                            Hoje
-                          </span>
-                        )}
-                      </div>
-                      {/* Data e horário como informação secundária */}
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70">
-                        {formatDateDDMM(lesson.date)} • {extractTimeFromISO(lesson.startTime)} - {extractTimeFromISO(lesson.endTime)}
-                        {lesson.description && ` • ${lesson.description}`}
-                        {lesson.closedAt && (
-                          <span className="ml-2 hidden sm:inline">
-                            • Fechada às {new Date(lesson.closedAt).toLocaleTimeString('pt-BR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-
-                    {/* Actions and Checkbox */}
-                    <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 ml-auto">
-                      {/* Status Badge com lógica automática */}
-                      {(() => {
-                        const now = new Date();
-                        
-                        // Extrai data em UTC para preservar o dia correto
-                        const lessonDateUTC = new Date(lesson.date);
-                        const year = lessonDateUTC.getUTCFullYear();
-                        const month = lessonDateUTC.getUTCMonth();
-                        const day = lessonDateUTC.getUTCDate();
-                        
-                        // Extrai HH:mm do formato ISO
-                        const startTimeStr = extractTimeFromISO(lesson.startTime);
-                        const endTimeStr = extractTimeFromISO(lesson.endTime);
-                        const [startHour, startMin] = startTimeStr.split(':').map(Number);
-                        const [endHour, endMin] = endTimeStr.split(':').map(Number);
-                        
-                        // Cria datetime em timezone LOCAL para comparar com now
-                        // Usa ano/mês/dia extraídos de UTC, mas cria em timezone local
-                        const startTime = new Date(year, month, day, startHour, startMin, 0, 0);
-                        const endTime = new Date(year, month, day, endHour, endMin, 0, 0);
-
-                        // Presença aberta (durante o horário)
-                        if (now >= startTime && now <= endTime && !lesson.closedAt) {
-                          return (
-                            <div className="hidden sm:flex items-center gap-4">
-                              <FiUserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLessonClick();
-                                }}
-                                className="btn-premium-outline gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform"
-                              >
-                                <FiEdit className="w-5 h-5 flex-shrink-0" />
-                                <span className="hidden sm:inline">Gerenciar</span>
-                              </button>
-                            </div>
-                          );
-                        }
-
-                        // Aula encerrada (horário passou)
-                        if (isFinished) {
-                          return (
-                            <div className="hidden sm:flex items-center gap-4">
-                              <FiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success flex-shrink-0" />
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLessonClick();
-                                }}
-                                className="btn-premium-outline gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform"
-                              >
-                                <FiEdit className="w-5 h-5 flex-shrink-0" />
-                                <span className="hidden sm:inline">Detalhes</span>
-                              </button>
-                            </div>
-                          );
-                        }
-
-                        // Aula agendada (ainda não começou)
-                        return (
-                          <div className="hidden sm:flex items-center gap-4">
-                            <FiClock className="w-5 h-5 sm:w-6 sm:h-6 text-warning flex-shrink-0" />
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLessonClick();
-                              }}
-                              className="btn-premium-outline gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform"
-                            >
-                              <FiEdit className="w-5 h-5 flex-shrink-0" />
-                              <span className="hidden sm:inline">Gerenciar</span>
-                            </button>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Checkbox de seleção */}
-                      <input
-                        type="checkbox"
-                        className="checkbox-custom-primary"
-                        checked={selectedLessons.has(lesson.id)}
-                        onChange={() => toggleLessonSelection(lesson.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  </div>
+                return (
+                  <LessonCard
+                    key={lesson.id}
+                    lesson={{ ...lesson, name: lesson.name || `Aula ${index + 1}` } as any}
+                    onView={handleLessonClick}
+                    onEdit={handleLessonClick}
+                    onDelete={handleDeleteLesson}
+                    index={index + 1}
+                  />
                 );
               })}
             </div>
@@ -645,25 +381,20 @@ export default function ClassDetailPage() {
 
       {/* Students List - Collapsible */}
       <section className="mt-8">
-        <div className="bg-white dark:bg-base-100 rounded-2xl shadow-md border border-gray-200 dark:border-base-300 overflow-hidden">
+        <div className="bg-white dark:bg-base-100 rounded-2xl shadow-md border border-gray-200 dark:border-base-300">
           <div 
             className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-base-200/50 transition-colors border-b border-gray-100 dark:border-base-300"
             onClick={() => setShowStudents(!showStudents)}
           >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
-                <FiUsers className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Alunos Matriculados
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
-                </p>
-              </div>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-0">
+                Alunos Matriculados
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
+              </p>
             </div>
-            <div className={`transition-transform duration-300 ${showStudents ? 'rotate-180' : ''}`}>
+            <div className={`transition-transform duration-300 flex-shrink-0 ml-4 ${showStudents ? 'rotate-180' : ''}`}>
               <svg className="w-6 h-6 text-gray-600 dark:text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -672,45 +403,52 @@ export default function ClassDetailPage() {
 
           {showStudents && (
             <div className="p-6">
-              <div className="list-card !border-0 !shadow-none animate-fade-in-up">
-                {students.length === 0 ? (
-                  <div className="empty-state py-8">
-                    <div className="text-6xl mb-4">👥</div>
-                    <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
-                    <p className="empty-state-description">
-                      Ainda não há alunos matriculados nesta turma.
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    {studentsWithStats.map((student) => (
-                      <div key={student.userId} className="list-card-item">
-                        {/* Avatar */}
-                        <div className="list-card-item-icon">
-                          <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
-                            {formatNameToInitials(student.user?.name || 'N/A')}
-                          </div>
+              {students.length === 0 ? (
+                <div className="empty-state py-8">
+                  <div className="text-6xl mb-4">👥</div>
+                  <h3 className="empty-state-title">Nenhum aluno matriculado</h3>
+                  <p className="empty-state-description">
+                    Ainda não há alunos matriculados nesta turma.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6 animate-fade-in-up">
+                  {studentsWithStats.map((student) => (
+                    <div key={student.userId} className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6">
+                      {/* Avatar and Name */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white font-bold text-sm flex-shrink-0">
+                          {formatNameToInitials(student.user?.name || 'N/A')}
                         </div>
-
-                        {/* Student Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">
                             {student.user?.name || 'Nome não disponível'}
                           </p>
-                          <p className="text-sm text-gray-600 dark:text-base-content/70">
-                            {student.totalAttendances} de {student.totalLessons} presenças registradas
-                          </p>
-                        </div>
-
-                        {/* Frequency Badge */}
-                        <div className="flex-shrink-0">
-                          <FrequencyBadge percentage={student.attendancePercentage} />
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+
+                      {/* Divider */}
+                      <div className="border-t border-gray-200 dark:border-base-content/10 pt-3">
+                        {/* Attendance Info */}
+                        <div className="space-y-2">
+                          <div className="text-xs sm:text-sm">
+                            <p className="text-gray-600 dark:text-base-content/70 mb-1">Presenças</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {student.totalAttendances} de {student.totalLessons}
+                            </p>
+                          </div>
+                          <div className="text-xs sm:text-sm">
+                            <p className="text-gray-600 dark:text-base-content/70 mb-1">Frequência</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {student.attendancePercentage.toFixed(1)}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -740,19 +478,6 @@ export default function ClassDetailPage() {
           classId={classId}
         />
       )}
-
-      {/* Confirm Delete Modal */}
-      <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteSelected}
-        title="Deletar Aulas"
-        message={`Tem certeza que deseja deletar ${selectedLessons.size} aula(s)? Esta ação não pode ser desfeita.`}
-        confirmText="Deletar"
-        cancelText="Cancelar"
-        confirmButtonClass="btn-error"
-        isLoading={isDeletingMultiple}
-      />
     </div>
   );
 }
