@@ -36,40 +36,63 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
-          <div className="premium-card max-w-md w-full p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-6">
-              <FiAlertTriangle className="text-error" size={40} />
-            </div>
-            
-            <h1 className="text-2xl font-bold text-base-content mb-2">
-              Oops! Algo deu errado
-            </h1>
-            
-            <p className="text-base-content/70 mb-6">
-              Ocorreu um erro inesperado. Tente recarregar a página ou voltar para o início.
-            </p>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-base-100 via-base-200 to-base-300 p-4">
+          <div className="card bg-base-100 shadow-2xl border-2 border-base-300 max-w-2xl w-full">
+            <div className="card-body p-6 sm:p-8">
+              {/* Icon Header */}
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-error/10 flex items-center justify-center ring-4 ring-error/20">
+                  <FiAlertTriangle className="text-error w-8 h-8 sm:w-10 sm:h-10" />
+                </div>
+              </div>
+              
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+                Oops! Algo deu errado
+              </h1>
+              
+              {/* Description */}
+              <p className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
+                Ocorreu um erro inesperado. Tente recarregar a página ou voltar para o início.
+              </p>
 
-            {this.state.error && (
-              <details className="mb-6 text-left">
-                <summary className="cursor-pointer text-sm text-base-content/50 hover:text-base-content/70">
-                  Detalhes técnicos
-                </summary>
-                <pre className="mt-2 p-3 bg-base-300 rounded-lg text-xs overflow-auto max-h-40">
-                  {this.state.error.message}
-                  {'\n\n'}
-                  {this.state.error.stack}
-                </pre>
-              </details>
-            )}
+              {/* Technical Details */}
+              {this.state.error && (
+                <details className="mb-6">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary transition-colors mb-2 flex items-center gap-2">
+                    <span>▼ Detalhes técnicos</span>
+                  </summary>
+                  <div className="mt-3 p-4 bg-gray-900 dark:bg-gray-950 rounded-xl border-2 border-gray-800 dark:border-gray-700">
+                    <pre className="text-xs sm:text-sm text-gray-100 dark:text-gray-300 overflow-auto max-h-64 font-mono leading-relaxed whitespace-pre-wrap break-words">
+                      <div className="text-red-400 font-semibold mb-2">Erro:</div>
+                      {this.state.error.message}
+                      {this.state.error.stack && (
+                        <>
+                          {'\n\n'}
+                          <div className="text-yellow-400 font-semibold mb-2">Stack Trace:</div>
+                          {this.state.error.stack}
+                        </>
+                      )}
+                    </pre>
+                  </div>
+                </details>
+              )}
 
-            <div className="flex gap-3 justify-center">
-              <button onClick={this.handleGoHome} className="btn btn-accent">
-                Ir para o Início
-              </button>
-              <button onClick={this.handleReload} className="btn btn-outline">
-                Recarregar Página
-              </button>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mt-2">
+                <button 
+                  onClick={this.handleGoHome} 
+                  className="btn-premium btn-premium-primary flex-1 sm:flex-initial"
+                >
+                  Ir para o Início
+                </button>
+                <button 
+                  onClick={this.handleReload} 
+                  className="btn-premium btn-premium-secondary flex-1 sm:flex-initial"
+                >
+                  Recarregar Página
+                </button>
+              </div>
             </div>
           </div>
         </div>
