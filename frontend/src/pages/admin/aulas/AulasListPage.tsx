@@ -194,7 +194,7 @@ export default function AulasListPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredLessons.map((lesson) => (
+                {filteredLessons.map((lesson, index) => (
                   <tr key={lesson.id}>
                     {/* Status */}
                     <td>
@@ -215,7 +215,7 @@ export default function AulasListPage() {
                     <td>
                       <div className="flex flex-col">
                         <div className="font-medium">
-                          {lesson.name || 'Aula sem nome'}
+                          {lesson.name || `Aula ${index + 1}`}
                         </div>
                         <div className="text-xs text-base-content/60 flex items-center gap-1 mt-1">
                           <FiBook className="w-3 h-3" />
