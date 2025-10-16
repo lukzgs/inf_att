@@ -1,22 +1,23 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { FiX, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
 
 const createClassSchema = z.object({
   subjectId: z.number().min(1, 'Selecione uma disciplina'),
   code: z.string().min(1, 'Código é obrigatório').max(10),
-  semester: z.string().regex(/^\d{4}\/[12]$/, 'Formato inválido (ex: 2025/1)'),
-  room: z.string().optional(),
-  schedules: z.array(z.object({
-    dayOfWeek: z.number().min(0).max(6),
-    startTime: z.string(),
-    endTime: z.string(),
-  })).min(1, 'Adicione pelo menos um horário'),
+  year: z.number().min(2020, 'Ano inválido').max(2030, 'Ano inválido'),
+  semester: z.union([z.string(), z.number()]).refine(
+    (val) => {
+      const num = Number(val);
+      return num === 1 || num === 2;
+    },
+    { message: 'Selecione um semestre' }
+  ),
+  location: z.string().optional(),
 });
 
 type CreateClassFormData = z.infer<typeof createClassSchema>;
@@ -26,31 +27,20 @@ interface CreateClassModalProps {
   onClose: () => void;
 }
 
-const daysOfWeek = [
-  { value: 1, label: 'Segunda-feira' },
-  { value: 2, label: 'Terça-feira' },
-  { value: 3, label: 'Quarta-feira' },
-  { value: 4, label: 'Quinta-feira' },
-  { value: 5, label: 'Sexta-feira' },
-  { value: 6, label: 'Sábado' },
-];
-
 export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
   const queryClient = useQueryClient();
-  const [schedules, setSchedules] = useState<Array<{
-    dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-  }>>([]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<CreateClassFormData>({
     resolver: zodResolver(createClassSchema),
+    defaultValues: {
+      year: new Date().getFullYear(),
+      semester: 1,
+    },
   });
 
   // Buscar disciplinas
@@ -78,66 +68,58 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
     },
   });
 
-  const addSchedule = () => {
-    const newSchedule = {
-      dayOfWeek: 1,
-      startTime: '08:00',
-      endTime: '10:00',
-    };
-    setSchedules([...schedules, newSchedule]);
-    setValue('schedules', [...schedules, newSchedule]);
-  };
-
-  const removeSchedule = (index: number) => {
-    const newSchedules = schedules.filter((_, i) => i !== index);
-    setSchedules(newSchedules);
-    setValue('schedules', newSchedules);
-  };
-
-  const updateSchedule = (index: number, field: string, value: any) => {
-    const newSchedules = [...schedules];
-    newSchedules[index] = { ...newSchedules[index], [field]: value };
-    setSchedules(newSchedules);
-    setValue('schedules', newSchedules);
-  };
-
   const handleClose = () => {
     reset();
-    setSchedules([]);
     onClose();
   };
 
   const onSubmit = (data: CreateClassFormData) => {
-    createClassMutation.mutate(data);
+    // Garantir que semester seja um número
+    const formattedData = {
+      ...data,
+      semester: Number(data.semester),
+    };
+    createClassMutation.mutate(formattedData);
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-2xl">
+      <div className="modal-box max-w-2xl bg-white dark:bg-base-100 shadow-2xl rounded-2xl border border-gray-200 dark:border-base-300">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold">Criar Nova Turma</h3>
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-base-300">
+          <div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+              Nova Turma
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Preencha os dados para criar uma nova turma
+            </p>
+          </div>
           <button
             onClick={handleClose}
-            className="btn btn-sm btn-circle btn-ghost"
+            className="btn btn-sm btn-circle btn-ghost hover:bg-gray-100 dark:hover:bg-base-200"
             disabled={createClassMutation.isPending}
           >
             <FiX className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Disciplina */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-semibold">Disciplina *</span>
+              <span className="label-text font-semibold text-gray-700 dark:text-gray-200">
+                Disciplina *
+              </span>
             </label>
             <select
               {...register('subjectId', { valueAsNumber: true })}
-              className={`select select-bordered w-full ${
-                errors.subjectId ? 'select-error' : ''
+              className={`select select-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-2 ${
+                errors.subjectId 
+                  ? 'border-error focus:border-error' 
+                  : 'border-gray-200 dark:border-base-300 focus:border-primary'
               }`}
             >
               <option value="">Selecione uma disciplina</option>
@@ -149,31 +131,65 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
             </select>
             {errors.subjectId && (
               <label className="label">
-                <span className="label-text-alt text-error">
+                <span className="label-text-alt text-error font-medium">
                   {errors.subjectId.message}
                 </span>
               </label>
             )}
           </div>
 
-          {/* Código e Semestre */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Código da Turma */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-gray-700 dark:text-gray-200">
+                Código da Turma *
+              </span>
+            </label>
+            <input
+              {...register('code')}
+              type="text"
+              placeholder="Ex: A, B, U, X01"
+              className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-2 ${
+                errors.code 
+                  ? 'border-error focus:border-error' 
+                  : 'border-gray-200 dark:border-base-300 focus:border-primary'
+              }`}
+            />
+            {errors.code && (
+              <label className="label">
+                <span className="label-text-alt text-error font-medium">
+                  {errors.code.message}
+                </span>
+              </label>
+            )}
+          </div>
+
+          {/* Ano e Semestre */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-semibold">Código da Turma *</span>
+                <span className="label-text font-semibold text-gray-700 dark:text-gray-200">
+                  Ano *
+                </span>
               </label>
-              <input
-                {...register('code')}
-                type="text"
-                placeholder="Ex: A, B, U, X01"
-                className={`input input-bordered ${
-                  errors.code ? 'input-error' : ''
+              <select
+                {...register('year', { valueAsNumber: true })}
+                className={`select select-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-2 ${
+                  errors.year 
+                    ? 'border-error focus:border-error' 
+                    : 'border-gray-200 dark:border-base-300 focus:border-primary'
                 }`}
-              />
-              {errors.code && (
+              >
+                <option value="">Selecione</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
+              {errors.year && (
                 <label className="label">
-                  <span className="label-text-alt text-error">
-                    {errors.code.message}
+                  <span className="label-text-alt text-error font-medium">
+                    {errors.year.message}
                   </span>
                 </label>
               )}
@@ -181,19 +197,34 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-semibold">Semestre *</span>
+                <span className="label-text font-semibold text-gray-700 dark:text-gray-200">
+                  Semestre *
+                </span>
               </label>
-              <input
-                {...register('semester')}
-                type="text"
-                placeholder="2025/1"
-                className={`input input-bordered ${
-                  errors.semester ? 'input-error' : ''
-                }`}
-              />
+              <div className="flex gap-4 items-center mt-3">
+                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                  <input
+                    {...register('semester')}
+                    type="radio"
+                    value="1"
+                    defaultChecked
+                    className="radio checked:bg-primary hover:bg-primary/80 border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">1º Semestre</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                  <input
+                    {...register('semester')}
+                    type="radio"
+                    value="2"
+                    className="radio checked:bg-primary hover:bg-primary/80 border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">2º Semestre</span>
+                </label>
+              </div>
               {errors.semester && (
                 <label className="label">
-                  <span className="label-text-alt text-error">
+                  <span className="label-text-alt text-error font-medium">
                     {errors.semester.message}
                   </span>
                 </label>
@@ -201,127 +232,35 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
             </div>
           </div>
 
-          {/* Sala */}
+          {/* Sala / Local */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-semibold">Sala / Local</span>
+              <span className="label-text font-semibold text-gray-700 dark:text-gray-200">
+                Sala / Local
+              </span>
+              <span className="label-text-alt text-gray-500 text-xs">Opcional</span>
             </label>
             <input
-              {...register('room')}
+              {...register('location')}
               type="text"
               placeholder="Ex: 201, Lab 3, Online"
-              className="input input-bordered"
+              className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-base-300 focus:border-primary"
             />
           </div>
 
-          {/* Horários */}
-          <div className="form-control">
-            <div className="flex items-center justify-between mb-3">
-              <label className="label">
-                <span className="label-text font-semibold">Horários das Aulas *</span>
-              </label>
-              <button
-                type="button"
-                onClick={addSchedule}
-                className="btn btn-sm btn-accent gap-2"
-              >
-                <FiPlus className="w-4 h-4" />
-                Adicionar Horário
-              </button>
-            </div>
-
-            {schedules.length === 0 ? (
-              <div className="alert alert-info">
-                <span>Adicione pelo menos um horário de aula</span>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {schedules.map((schedule, index) => (
-                  <div
-                    key={index}
-                    className="flex items-end gap-2 p-3 bg-base-200 rounded-lg"
-                  >
-                    <div className="flex-1">
-                      <label className="label">
-                        <span className="label-text text-xs">Dia da Semana</span>
-                      </label>
-                      <select
-                        value={schedule.dayOfWeek}
-                        onChange={(e) =>
-                          updateSchedule(index, 'dayOfWeek', Number(e.target.value))
-                        }
-                        className="select select-bordered select-sm w-full"
-                      >
-                        {daysOfWeek.map((day) => (
-                          <option key={day.value} value={day.value}>
-                            {day.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="flex-1">
-                      <label className="label">
-                        <span className="label-text text-xs">Início</span>
-                      </label>
-                      <input
-                        type="time"
-                        value={schedule.startTime}
-                        onChange={(e) =>
-                          updateSchedule(index, 'startTime', e.target.value)
-                        }
-                        className="input input-bordered input-sm w-full"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <label className="label">
-                        <span className="label-text text-xs">Fim</span>
-                      </label>
-                      <input
-                        type="time"
-                        value={schedule.endTime}
-                        onChange={(e) =>
-                          updateSchedule(index, 'endTime', e.target.value)
-                        }
-                        className="input input-bordered input-sm w-full"
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => removeSchedule(index)}
-                      className="btn btn-sm btn-error btn-outline"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {errors.schedules && (
-              <label className="label">
-                <span className="label-text-alt text-error">
-                  {errors.schedules.message}
-                </span>
-              </label>
-            )}
-          </div>
-
           {/* Botões */}
-          <div className="modal-action">
+          <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-base-300">
             <button
               type="button"
               onClick={handleClose}
-              className="btn btn-ghost"
+              className="btn-premium-outline flex-1"
               disabled={createClassMutation.isPending}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="btn btn-accent"
+              className="btn-premium flex-1"
               disabled={createClassMutation.isPending}
             >
               {createClassMutation.isPending ? (
@@ -336,7 +275,7 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
           </div>
         </form>
       </div>
-      <div className="modal-backdrop" onClick={handleClose}></div>
+      <div className="modal-backdrop bg-black/60 backdrop-blur-sm" onClick={handleClose}></div>
     </div>
   );
 }
