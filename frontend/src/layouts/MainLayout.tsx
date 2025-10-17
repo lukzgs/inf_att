@@ -1,6 +1,6 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiHome, FiBookOpen, FiLogOut, FiUsers, FiMenu, FiX, FiBarChart2, FiChevronLeft } from 'react-icons/fi';
+import { FiHome, FiBookOpen, FiLogOut, FiUsers, FiMenu, FiX, FiBarChart2, FiChevronLeft, FiClipboard, FiAward } from 'react-icons/fi';
 import { useState } from 'react';
 import { NotificationCenter } from '../components/notifications/NotificationCenter';
 
@@ -17,10 +17,10 @@ const NavItem = ({ to, icon, label, onClick, collapsed }: {
       onClick={onClick}
       title={collapsed ? label : ''}
       className={({ isActive }) => `
-        flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-xl transition-all duration-200
+        flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl transition-all duration-200
         font-medium relative group
         ${isActive 
-          ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+          ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-base-300' 
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-base-200'
         }
       `}
@@ -50,10 +50,10 @@ export default function MainLayout() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      {/* Mobile Header */}
-      <header className="lg:hidden bg-white dark:bg-base-100 border-b border-gray-200 dark:border-base-300 px-4 py-3 flex items-center justify-between shadow-sm">
+      {/* Mobile & Tablet Header */}
+      <header className="lg:hidden bg-white dark:bg-base-100 border-b border-gray-200 dark:border-base-300 px-4 py-3 flex items-center justify-between shadow-sm rounded-b-3xl">
         <div className="flex items-center gap-3">
-          <button 
+        <button 
             onClick={toggleSidebar}
             className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
             aria-label="Toggle menu"
@@ -85,6 +85,7 @@ export default function MainLayout() {
           lg:transform-none
           flex flex-col
           shadow-xl lg:shadow-none
+          rounded-r-3xl lg:rounded-r-3xl
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isCollapsed ? 'w-20 lg:w-20' : 'w-72 lg:w-72'}
         `}>
@@ -94,7 +95,7 @@ export default function MainLayout() {
               to="/profile"
               className={`flex items-center ${isCollapsed ? 'lg:flex-col lg:w-full lg:justify-center' : 'gap-3 flex-1'}`}
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-white flex items-center justify-center flex-shrink-0 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white flex items-center justify-center flex-shrink-0 shadow-lg">
                 <span className="font-bold text-lg">{user?.name?.charAt(0).toUpperCase()}</span>
               </div>
               {!isCollapsed && (
@@ -108,21 +109,21 @@ export default function MainLayout() {
             {/* Collapse Button */}
             <button 
               onClick={toggleCollapse}
-              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-base-200 transition-colors text-gray-600 dark:text-gray-400"
+              className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-base-200 transition-colors text-gray-600 dark:text-gray-400"
               title={isCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
             >
               <FiChevronLeft size={20} className={`transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
             </button>
           </div>
 
-          {/* Mobile Header - Only on mobile */}
+          {/* Mobile Header - Only on mobile/tablet */}
           <div className="lg:hidden flex items-center justify-between p-3 border-b border-gray-200 dark:border-base-300">
             <Link 
               to="/profile"
               onClick={closeSidebar}
               className="flex items-center gap-3 flex-1"
             >
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 text-white flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-white flex items-center justify-center shadow-lg">
                 <span className="font-bold">{user?.name?.charAt(0).toUpperCase()}</span>
               </div>
               <div className="overflow-hidden flex-1">
@@ -132,7 +133,7 @@ export default function MainLayout() {
             </Link>
             <button 
               onClick={closeSidebar}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
             >
               <FiX size={20} />
             </button>
@@ -154,6 +155,11 @@ export default function MainLayout() {
                 onClick={closeSidebar}
                 collapsed={isCollapsed}
               />
+              
+              {/* Notifications Item - Desktop only */}
+              <li className="hidden lg:block">
+                <NotificationCenter variant="nav-item" collapsed={isCollapsed} />
+              </li>
               
               {/* Admin Section */}
               {user?.roles?.includes('ADMIN') && (
@@ -195,6 +201,20 @@ export default function MainLayout() {
                     onClick={closeSidebar}
                     collapsed={isCollapsed}
                   />
+                  <NavItem 
+                    to="/professor/aulas" 
+                    icon={<FiClipboard size={20} />} 
+                    label="Aulas"
+                    onClick={closeSidebar}
+                    collapsed={isCollapsed}
+                  />
+                  <NavItem 
+                    to="/professor/alunos" 
+                    icon={<FiAward size={20} />} 
+                    label="Alunos"
+                    onClick={closeSidebar}
+                    collapsed={isCollapsed}
+                  />
                 </>
               )}
             </ul>
@@ -209,7 +229,7 @@ export default function MainLayout() {
                 closeSidebar();
               }}
               title="Desconectar"
-              className={`w-full flex items-center ${isCollapsed ? 'lg:justify-center' : 'justify-center lg:justify-start gap-3'} px-3 py-2 lg:py-2.5 rounded-lg
+              className={`w-full flex items-center ${isCollapsed ? 'lg:justify-center' : 'justify-center lg:justify-start gap-3'} px-3 py-2 lg:py-2.5 rounded-2xl
                        bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 
                        hover:bg-red-100 dark:hover:bg-red-900/30
                        transition-colors font-semibold text-sm`}
