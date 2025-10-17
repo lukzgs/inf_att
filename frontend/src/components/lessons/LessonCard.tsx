@@ -1,4 +1,4 @@
-import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar } from 'react-icons/fi';
+import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar, FiCheckCircle, FiX } from 'react-icons/fi';
 import { useState } from 'react';
 
 interface LessonCardProps {
@@ -11,6 +11,7 @@ interface LessonCardProps {
     endTime: string;
     isOpen: boolean;
     closedAt?: string | null;
+    isCanceled?: boolean;
     class?: {
       code: string;
       subject?: {
@@ -67,6 +68,57 @@ export function LessonCard({
     return date.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }).replace(' de ', ' ');
   };
 
+  // Determinar status da aula
+  const getLessonStatus = () => {
+    if (lesson.isCanceled) {
+      return {
+        status: 'canceled',
+        icon: <FiX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600 dark:text-red-400" />,
+        bgColor: 'bg-red-50 dark:bg-red-500/10 ring-2 ring-red-200 dark:ring-red-500/30',
+      };
+    }
+    
+    // Verificar se a aula já passou (data + endTime < agora)
+    const now = new Date();
+    try {
+      // Parse da data - suporta tanto YYYY-MM-DD quanto ISO DateTime
+      let lessonDate: Date;
+      
+      if (lesson.date.includes('T')) {
+        // Se for ISO DateTime completo (ex: 2024-10-16T00:00:00.000Z)
+        lessonDate = new Date(lesson.date);
+      } else {
+        // Se for apenas data YYYY-MM-DD
+        lessonDate = new Date(lesson.date + 'T00:00:00');
+      }
+      
+      // Adicionar horário de término
+      const [hours, minutes] = endTimeStr.split(':').map(Number);
+      lessonDate.setHours(hours, minutes, 0, 0);
+      
+      const isPast = lessonDate < now;
+      
+      if (isPast || lesson.closedAt) {
+        return {
+          status: 'completed',
+          icon: <FiCheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />,
+          bgColor: 'bg-green-50 dark:bg-green-500/10 ring-2 ring-green-200 dark:ring-green-500/30',
+        };
+      }
+    } catch (error) {
+      // Fallback se houver erro no parsing
+      console.error('Erro ao parsear data da aula:', error, 'lesson.date:', lesson.date);
+    }
+    
+    return {
+      status: 'scheduled',
+      icon: <FiCalendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />,
+      bgColor: 'bg-primary/10 ring-2 ring-primary/20',
+    };
+  };
+
+  const lessonStatus = getLessonStatus();
+
   return (
     <div
       className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6"
@@ -84,9 +136,17 @@ export function LessonCard({
             </p>
           )}
           {lesson.class && (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70">
-              {lesson.class.code} • {lesson.class.subject?.name}
-            </p>
+            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+              <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">
+                {(lesson.class.subject as any)?.code || 'DISC'}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                {lesson.class.subject?.name}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Turma: {lesson.class.code}
+              </p>
+            </div>
           )}
         </div>
 
@@ -170,10 +230,10 @@ export function LessonCard({
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-base-content/10">
-        {/* Data */}
+        {/* Data com Status */}
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <FiCalendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${lessonStatus.bgColor} flex items-center justify-center flex-shrink-0`}>
+            {lessonStatus.icon}
           </div>
           <div className="min-w-0">
             <p className="text-[10px] sm:text-xs text-gray-600 dark:text-base-content/70">Data</p>
@@ -185,7 +245,7 @@ export function LessonCard({
 
         {/* Horário */}
         <div className="flex items-center gap-2 justify-end">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 ring-2 ring-blue-200 dark:ring-blue-500/30 flex items-center justify-center flex-shrink-0">
             <FiClock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="min-w-0">
