@@ -36,9 +36,9 @@ export default function ProfessorDashboard() {
             </h2>
             <button 
               onClick={() => setIsCreateModalOpen(true)}
-              className="btn-premium gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform"
+              className="flex-shrink-0 btn-premium gap-2 text-sm sm:text-base p-2 sm:p-3 rounded-lg hover:sm:scale-105 active:scale-95 transition-transform"
             >
-              <FiPlus className="w-5 h-5 flex-shrink-0" />
+              <FiPlus className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="hidden sm:inline">Nova Turma</span>
             </button>
           </div>
