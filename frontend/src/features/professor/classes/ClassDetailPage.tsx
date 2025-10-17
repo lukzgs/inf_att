@@ -12,6 +12,8 @@ import { formatNameToInitials } from '@/utils/format';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import { CreateLessonModal } from '@/components/professor/CreateLessonModal';
 import { LessonCard } from '@/components/lessons/LessonCard';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { ClassInfoPanel } from '@/components/professor/ClassInfoPanel';
 
 type FilterType = 'all' | 'finished' | 'scheduled';
 
@@ -71,6 +73,19 @@ export default function ClassDetailPage() {
     lessonId: number;
     className: string;
   } | null>(null);
+
+  // Estado para modal de confirmação de deleção
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    lessonId: number | null;
+    lessonName: string;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    lessonId: null,
+    lessonName: '',
+    isLoading: false,
+  });
 
   // Fetch class data (já inclui lessons e users)
   const { data: classData, isLoading: isLoadingClass } = useClass(classId);
@@ -203,30 +218,54 @@ export default function ClassDetailPage() {
     );
   }
 
+  // Função para deletar aula (chamada do modal de confirmação)
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation.lessonId) return;
+
+    setDeleteConfirmation((prev) => ({ ...prev, isLoading: true }));
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:3000/aulas/${deleteConfirmation.lessonId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success('Aula deletada com sucesso!');
+        setDeleteConfirmation({
+          isOpen: false,
+          lessonId: null,
+          lessonName: '',
+          isLoading: false,
+        });
+        await queryClient.refetchQueries({ queryKey: ['classes', classId] });
+      } else {
+        toast.error('Erro ao deletar aula');
+        setDeleteConfirmation((prev) => ({ ...prev, isLoading: false }));
+      }
+    } catch (error) {
+      toast.error('Erro ao deletar aula');
+      setDeleteConfirmation((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
   return (
     <div className="animate-fade-in-up">
-      {/* Compact Header */}
-      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-8">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            {/* Código - Turma */}
-            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
-              {classData.subject?.code} - Turma {classData.code}
-            </h1>
-            {/* Nome da Disciplina • Ano/Semestre */}
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 line-clamp-2">
-              {classData.subject?.name} • {classData.year}/{classData.semester}
-            </p>
-          </div>
-          <Link 
-            to="/dashboard"
-            className="btn-premium-outline gap-2 text-sm sm:text-base p-2 sm:px-6 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform flex-shrink-0 sm:w-44 justify-center"
-          >
-            <FiArrowLeft className="w-5 h-5 flex-shrink-0" />
-            <span className="hidden sm:inline">Voltar</span>
-          </Link>
-        </div>
-      </div>
+      {/* Class Info Panel */}
+      <ClassInfoPanel
+        subjectCode={classData.subject?.code || '---'}
+        subjectName={classData.subject?.name || '---'}
+        classCode={classData.code}
+        year={classData.year}
+        semester={classData.semester}
+        credits={classData.subject?.credits || 0}
+        totalStudents={students.length}
+        totalLessons={lessonsData?.length || 0}
+        onBack={() => window.history.back()}
+      />
 
       {/* Lessons Section */}
       <section className="mt-8">
@@ -243,9 +282,9 @@ export default function ClassDetailPage() {
             </div>
             <button
               onClick={() => setIsCreateLessonModalOpen(true)}
-              className="btn-premium gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3 hover:sm:scale-105 active:scale-95 transition-transform flex-shrink-0"
+              className="flex-shrink-0 btn-premium gap-2 text-sm sm:text-base p-2 sm:p-3 rounded-lg hover:sm:scale-105 active:scale-95 transition-transform"
             >
-              <FiPlus className="w-5 h-5 flex-shrink-0" />
+              <FiPlus className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="hidden sm:inline">Nova Aula</span>
             </button>
           </div>
@@ -336,31 +375,13 @@ export default function ClassDetailPage() {
                   });
                 };
 
-                const handleDeleteLesson = async () => {
-                  const confirmed = window.confirm(
-                    `Tem certeza que deseja deletar a aula "${lesson.name || 'Sem nome'}"? Esta ação não pode ser desfeita.`
-                  );
-
-                  if (confirmed) {
-                    try {
-                      const token = localStorage.getItem('authToken');
-                      const response = await fetch(`http://localhost:3000/aulas/${lesson.id}`, {
-                        method: 'DELETE',
-                        headers: {
-                          'Authorization': `Bearer ${token}`,
-                        },
-                      });
-
-                      if (response.ok) {
-                        toast.success('Aula deletada com sucesso!');
-                        await queryClient.refetchQueries({ queryKey: ['classes', classId] });
-                      } else {
-                        toast.error('Erro ao deletar aula');
-                      }
-                    } catch (error) {
-                      toast.error('Erro ao deletar aula');
-                    }
-                  }
+                const handleDeleteLesson = () => {
+                  setDeleteConfirmation({
+                    isOpen: true,
+                    lessonId: lesson.id,
+                    lessonName: lesson.name || `Aula ${index + 1}`,
+                    isLoading: false,
+                  });
                 };
 
                 return (
@@ -478,6 +499,24 @@ export default function ClassDetailPage() {
           classId={classId}
         />
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteConfirmation.isOpen}
+        title="Deletar Aula"
+        description="Você está prestes a deletar esta aula. Todos os dados relacionados (presenças, atividades, etc.) também serão removidos."
+        itemName={deleteConfirmation.lessonName}
+        isLoading={deleteConfirmation.isLoading}
+        onConfirm={handleConfirmDelete}
+        onCancel={() =>
+          setDeleteConfirmation({
+            isOpen: false,
+            lessonId: null,
+            lessonName: '',
+            isLoading: false,
+          })
+        }
+      />
     </div>
   );
 }
