@@ -16,6 +16,9 @@ import DashboardPage from './pages/DashboardPage'; // ✅ Dashboard carregado im
 
 // Professor pages (carregadas imediatamente para melhor performance)
 import ClassDetailPage from './features/professor/classes/ClassDetailPage';
+import TurmasPage from './features/professor/turmas/TurmasPage';
+import ProfessorAulasPage from './features/professor/aulas/AulasPage';
+import ProfessorAlunosPage from './features/professor/alunos/AlunosPage';
 
 // Lazy-loaded pages (loaded on demand)
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -131,7 +134,10 @@ function App() {
             } />
             
             {/* Professor Routes - Sem Suspense para carregamento mais rápido */}
+            <Route path="turmas" element={<TurmasPage />} />
             <Route path="professor/turmas/:id" element={<ClassDetailPage />} />
+            <Route path="professor/aulas" element={<ProfessorAulasPage />} />
+            <Route path="professor/alunos" element={<ProfessorAlunosPage />} />
             
             {/* Admin Routes - Usuários */}
             <Route path="admin/usuarios" element={
