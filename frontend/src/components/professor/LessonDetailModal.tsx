@@ -382,124 +382,132 @@ export function LessonDetailModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={onClose} />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="modal modal-open">
-        <div className="modal-box max-w-4xl max-h-[90vh] overflow-y-auto relative z-50 bg-white dark:bg-base-200">
-          {/* Header */}
-          <div className="flex items-start justify-between p-6 border-b border-gray-200 dark:border-base-content/10 sticky top-0 bg-white dark:bg-base-200 z-10">
-            <div className="flex-1">
-              {/* Título: Nome da Aula */}
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
-              </h3>
-              
-              {/* Data e Horário */}
-              <div className="flex items-center gap-3 text-base text-gray-600 dark:text-base-content/70">
-                <div className="flex items-center gap-1">
-                  <FiCalendar className="w-4 h-4" />
-                  <span>{new Date(lessonData?.date || '').toLocaleDateString('pt-BR')}</span>
-                </div>
-                <span>•</span>
-                <div className="flex items-center gap-1">
-                  <FiClock className="w-4 h-4" />
-                  <span>
-                    {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'} - {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
-                  </span>
-                </div>
+        <div className="modal-box max-w-2xl max-h-[90vh] overflow-y-auto relative z-50 bg-white dark:bg-base-100 p-0 rounded-2xl shadow-2xl">
+          {/* Header Minimalista */}
+          <div className="sticky top-0 bg-white dark:bg-base-100 border-b border-gray-200 dark:border-base-content/10 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-base-200 flex items-center justify-center">
+                <FiCalendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900 dark:text-white">
+                  {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {new Date(lessonData?.date || '').toLocaleDateString('pt-BR')} • {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'} - {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
+                </p>
               </div>
             </div>
-            <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
+            <button 
+              onClick={onClose} 
+              className="btn btn-sm btn-ghost btn-circle text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200"
+            >
               <FiX className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Content wrapper com padding */}
-          <div className="p-6 space-y-6">
-        {/* Actions */}
-        <div className="flex items-center gap-3">
+          {/* Content */}
+          <div className="p-6 space-y-5">
+        {/* Actions Bar - Minimalista estilo NotificationCenter */}
+        <div className="flex items-center justify-between">
           {/* Status Badge */}
           {(() => {
             const status = getLessonStatus();
             const Icon = status.icon || FiClock;
+            const statusColors = {
+              'badge-success': 'text-green-700 dark:text-green-400',
+              'badge-warning': 'text-yellow-700 dark:text-yellow-400',
+              'badge-ghost': 'text-gray-600 dark:text-gray-400',
+            };
             return (
-              <div className={`badge ${status.color} badge-lg gap-2 text-base`}>
-                <Icon className="w-4 h-4" /> {status.label}
+              <div className={`flex items-center gap-2 font-medium text-sm ${statusColors[status.color as keyof typeof statusColors] || statusColors['badge-ghost']}`}>
+                <Icon className="w-4 h-4" /> 
+                {status.label}
               </div>
             );
           })()}
 
-          <div className="ml-auto flex gap-2">
-            {!isEditing && (
-              <>
-                <button 
-                  onClick={() => setIsEditing(true)}
-                  className="btn-premium gap-2 text-base"
-                >
-                  <FiEdit2 className="w-4 h-4" /> Editar
-                </button>
-                <button 
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="btn-premium-outline gap-2 text-base !bg-error/10 !border-error !text-error hover:!bg-error hover:!text-white"
-                  disabled={isLoading}
-                >
-                  <FiTrash2 className="w-4 h-4" /> Deletar
-                </button>
-              </>
-            )}
-            {isEditing && (
-              <>
-                <button 
-                  onClick={handleSave}
-                  className="btn-premium gap-2 text-base"
-                  disabled={isLoading}
-                >
-                  <FiSave className="w-4 h-4" /> Salvar
-                </button>
-                <button 
-                  onClick={() => {
-                    setIsEditing(false);
-                    fetchLessonData();
-                  }}
-                  className="btn-premium-outline gap-2 text-base"
-                >
-                  Cancelar
-                </button>
-              </>
-            )}
+          <div className="flex items-center gap-2">
+              {!isEditing && (
+                <>
+                  <button 
+                    onClick={() => setIsEditing(true)}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-base-200 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-base-300 transition-all flex items-center gap-1.5 text-sm"
+                  >
+                    <FiEdit2 className="w-4 h-4" /> Editar
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-base-200 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex items-center gap-1.5 text-sm"
+                    disabled={isLoading}
+                  >
+                    <FiTrash2 className="w-4 h-4" /> Deletar
+                  </button>
+                </>
+              )}
+              {isEditing && (
+                <>
+                  <button 
+                    onClick={handleSave}
+                    className="px-3 py-1.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all flex items-center gap-1.5 text-sm"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="loading loading-spinner loading-xs"></span>
+                    ) : (
+                      <FiSave className="w-4 h-4" />
+                    )}
+                    Salvar
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsEditing(false);
+                      fetchLessonData();
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-base-200 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-base-300 transition-all text-sm"
+                  >
+                    Cancelar
+                  </button>
+                </>
+              )}
           </div>
         </div>
 
         {/* Lesson Details */}
-          {/* Basic Info */}
-          <div className="border border-gray-200 dark:border-base-content/10 rounded-lg p-4 bg-gray-50 dark:bg-base-300">
-              <h4 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Informações da Aula</h4>
+          {/* Basic Info - Minimalista */}
+          <div className="bg-white dark:bg-base-100 rounded-xl p-5 border border-gray-200 dark:border-base-content/10">
+              <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4">Informações da Aula</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Name */}
                 <div className="form-control md:col-span-2">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">Título/Tópico</span>
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400">Título/Tópico</span>
                   </label>
                   {isEditing ? (
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="input input-bordered bg-white dark:bg-base-100 text-base"
+                      className="input input-bordered bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                       placeholder="Ex: Introdução a Algoritmos"
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {lessonData?.name || 'Sem título'}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {lessonData?.name || 'Sem título'}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Date */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                      <FiCalendar className="w-4 h-4" /> Data
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiCalendar className="w-3.5 h-3.5" /> Data
                     </span>
                   </label>
                   {isEditing ? (
@@ -508,20 +516,22 @@ export function LessonDetailModal({
                       onChange={(date) => date && setFormData({ ...formData, date })}
                       dateFormat="dd/MM/yyyy"
                       locale={ptBR}
-                      className="input input-bordered w-full bg-white dark:bg-base-100 text-base"
+                      className="input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {new Date(lessonData?.date || '').toLocaleDateString('pt-BR')}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {new Date(lessonData?.date || '').toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Start Time */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                      <FiClock className="w-4 h-4" /> Início
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiClock className="w-3.5 h-3.5" /> Início
                     </span>
                   </label>
                   {isEditing ? (
@@ -534,20 +544,22 @@ export function LessonDetailModal({
                       timeCaption="Hora"
                       dateFormat="HH:mm"
                       locale={ptBR}
-                      className="input input-bordered w-full bg-white dark:bg-base-100 text-base"
+                      className="input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* End Time */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                      <FiClock className="w-4 h-4" /> Término
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiClock className="w-3.5 h-3.5" /> Término
                     </span>
                   </label>
                   {isEditing ? (
@@ -560,20 +572,23 @@ export function LessonDetailModal({
                       timeCaption="Hora"
                       dateFormat="HH:mm"
                       locale={ptBR}
-                      className="input input-bordered w-full bg-white dark:bg-base-100 text-base"
+                      className="input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Password */}
                 <div className="form-control md:col-span-2">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                      <FiCheckCircle className="w-4 h-4" /> Senha de Presença (opcional)
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiCheckCircle className="w-3.5 h-3.5" />
+                      Senha de Presença <span className="text-xs text-gray-500">(opcional)</span>
                     </span>
                   </label>
                   {isEditing ? (
@@ -581,65 +596,83 @@ export function LessonDetailModal({
                       type="text"
                       value={formData.attendancePassword}
                       onChange={(e) => setFormData({ ...formData, attendancePassword: e.target.value })}
-                      className="input input-bordered bg-white dark:bg-base-100 text-base"
+                      className="input input-bordered bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                       placeholder="Senha para registro de presença"
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {lessonData?.attendancePassword || 'Sem senha'}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {lessonData?.attendancePassword || 'Sem senha'}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Description */}
                 <div className="form-control md:col-span-2">
                   <label className="label">
-                    <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">Descrição</span>
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400">Descrição</span>
                   </label>
                   {isEditing ? (
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="textarea textarea-bordered h-24 bg-white dark:bg-base-100 text-base"
+                      className="textarea textarea-bordered h-20 bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm rounded-lg resize-none"
                       placeholder="Descrição da aula..."
                     />
                   ) : (
-                    <p className="text-gray-900 dark:text-white py-2 text-base">
-                      {lessonData?.description || 'Sem descrição'}
-                    </p>
+                    <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10 min-h-[60px]">
+                      <p className="text-gray-900 dark:text-white text-sm">
+                        {lessonData?.description || 'Sem descrição'}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
           </div>
 
-          {/* Info Alert sobre Presença Automática */}
-          <div className="alert alert-info bg-info/10 border-info/20">
-            <FiClock className="w-5 h-5 text-info" />
-            <div className="text-base text-gray-700 dark:text-gray-200">
-              <strong>Presença Automática:</strong> A aula abre automaticamente no horário de início 
-              e fecha no horário de término. Alunos podem registrar presença durante esse período.
+          {/* Info Alert - Minimalista */}
+          <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <FiClock className="w-3 h-3 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-blue-900 dark:text-blue-200">
+                  <strong>Presença Automática:</strong> A aula abre automaticamente no horário de início e fecha no horário de término. Alunos podem registrar presença durante esse período.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Attendance Section */}
-          <div className="border border-gray-200 dark:border-base-content/10 rounded-lg p-4 bg-gray-50 dark:bg-base-300">
-              <h4 className="font-bold text-xl mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
+          {/* Attendance Section - Minimalista */}
+          <div className="bg-white dark:bg-base-100 rounded-xl p-5 border border-gray-200 dark:border-base-content/10">
+              <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <FiUsers className="w-5 h-5" /> Lista de Presença
               </h4>
 
-              {/* Stats */}
-              <div className="stats stats-horizontal shadow mb-4">
-                <div className="stat">
-                  <div className="stat-title text-base">Presentes</div>
-                  <div className="stat-value text-success">{presentCount}</div>
+              {/* Stats - Minimalista */}
+              <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="bg-green-50 dark:bg-green-500/10 rounded-lg p-3 ring-2 ring-green-200 dark:ring-green-500/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Presentes</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{presentCount}</div>
                 </div>
-                <div className="stat">
-                  <div className="stat-title text-base">Ausentes</div>
-                  <div className="stat-value text-error">{absentCount}</div>
+                <div className="bg-red-50 dark:bg-red-500/10 rounded-lg p-3 ring-2 ring-red-200 dark:ring-red-500/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiXCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Ausentes</span>
+                  </div>
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{absentCount}</div>
                 </div>
-                <div className="stat">
-                  <div className="stat-title text-base">Não Registrado</div>
-                  <div className="stat-value text-warning">{notRegisteredCount}</div>
+                <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-lg p-3 ring-2 ring-yellow-200 dark:ring-yellow-500/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FiClock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Pendente</span>
+                  </div>
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{notRegisteredCount}</div>
                 </div>
               </div>
 
