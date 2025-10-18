@@ -74,20 +74,21 @@ interface CreateLessonModalProps {
 }
 
 const formatDateToISO = (date: Date): string => {
-  // Cria uma nova data em UTC para evitar problemas de timezone
-  // Pega ano/mês/dia da data LOCAL e cria em UTC
+  // Formata como ISO Date string (YYYY-MM-DDTHH:mm:ss.sssZ)
+  // Mas mantendo a data local, sem conversão de timezone
+  // Trata a data como se estivesse em UTC para não fazer conversão
   const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   
-  console.log('🔍 formatDateToISO - Input:', date.toString());
-  console.log('🔍 formatDateToISO - Extraído:', { year, month, day });
-  
-  const utcDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-  const result = utcDate.toISOString();
-  
-  console.log('🔍 formatDateToISO - Output:', result);
-  
+  const result = `${year}-${month}-${day}T00:00:00.000Z`;
+  console.log('📅 formatDateToISO:', {
+    input: date.toString(),
+    year,
+    month,
+    day,
+    output: result
+  });
   return result;
 };
 
