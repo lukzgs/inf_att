@@ -1,21 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   FiArrowLeft,
   FiPlus,
-  FiChevronDown,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
 import { formatNameToInitials } from '@/utils/format';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import { CreateLessonModal } from '@/components/professor/CreateLessonModal';
 import { LessonCard } from '@/components/lessons/LessonCard';
+import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { ClassInfoPanel } from '@/components/professor/ClassInfoPanel';
+import { filterLessonsByStatus, getLessonNumber } from '@/utils/lessonStatus';
 
-type FilterType = 'all' | 'finished' | 'scheduled';
+type FilterType = 'all' | 'completed' | 'scheduled';
 
 /**
  * Extrai apenas a parte do horário (HH:mm) de uma string ISO datetime
@@ -67,7 +68,6 @@ export default function ClassDetailPage() {
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
   const [showStudents, setShowStudents] = useState(false);
   const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
@@ -93,19 +93,6 @@ export default function ClassDetailPage() {
   // Extract lessons from class data
   const lessonsData = classData?.lessons || [];
   const isLoadingLessons = isLoadingClass;
-
-  // Fechar dropdown ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (showFilterDropdown && !target.closest('.filter-dropdown')) {
-        setShowFilterDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilterDropdown]);
 
   // Extract students from class users
   const students = classData?.users?.filter(uc => uc.role === 'STUDENT') || [];
@@ -136,30 +123,18 @@ export default function ClassDetailPage() {
     ? studentsWithStats.reduce((sum, s) => sum + s.attendancePercentage, 0) / studentsWithStats.length
     : 0;
 
-  // Filter lessons
-  const now = new Date();
-  
-  const filteredLessons = lessonsData?.filter(lesson => {
-    if (lessonFilter === 'finished') {
-      return lesson.closedAt !== null;
-    }
-    if (lessonFilter === 'scheduled') {
-      return lesson.closedAt === null;
-    }
-    return true;
-  }) || [];
+  // Filter lessons using the lessonStatus utility
+  const filteredLessons = filterLessonsByStatus(lessonsData || [], lessonFilter);
 
-  // Sort lessons by proximity (upcoming first, then most recent past)
+  // Sort lessons with smart ordering based on filter
   const sortedLessons = [...filteredLessons].sort((a, b) => {
     // Cria Date completo com data + horário para comparação precisa
-    // Extrai ano/mês/dia em UTC para preservar a data correta
     const dateA = new Date(a.date);
     const yearA = dateA.getUTCFullYear();
     const monthA = dateA.getUTCMonth();
     const dayA = dateA.getUTCDate();
     const startTimeA = extractTimeFromISO(a.startTime);
     const [hourA, minA] = startTimeA.split(':').map(Number);
-    // Cria em timezone LOCAL para comparar com now (que é local)
     const dateTimeA = new Date(yearA, monthA, dayA, hourA, minA, 0, 0);
     
     const dateB = new Date(b.date);
@@ -172,20 +147,19 @@ export default function ClassDetailPage() {
     
     const timeA = dateTimeA.getTime();
     const timeB = dateTimeB.getTime();
-    const nowTime = now.getTime();
-
-    // Se ambas são futuras, ordena pela mais próxima (ascendente)
-    if (timeA >= nowTime && timeB >= nowTime) {
+    
+    // Para aulas agendadas (scheduled), sempre mostrar próximas primeiro (crescente)
+    if (lessonFilter === 'scheduled') {
       return timeA - timeB;
     }
     
-    // Se ambas são passadas, ordena pela mais recente (descendente)
-    if (timeA < nowTime && timeB < nowTime) {
+    // Para aulas realizadas (completed), sempre mostrar recentes primeiro (decrescente)
+    if (lessonFilter === 'completed') {
       return timeB - timeA;
     }
     
-    // Se uma é futura e outra passada, futura vem primeiro
-    return timeA >= nowTime ? -1 : 1;
+    // Para "todas" (all), ordem cronológica simples (crescente - mais antiga primeiro)
+    return timeA - timeB;
   });
 
 
@@ -289,113 +263,66 @@ export default function ClassDetailPage() {
             </button>
           </div>
 
-          {/* Filtro - Mais limpo */}
+          {/* Filtro de Status */}
           <div className="flex items-center gap-2 sm:gap-3 mb-6">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filtrar:</span>
-            <div className="relative">
-            <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-base-300 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors font-medium"
-            >
-              {lessonFilter === 'all' && 'Todas'}
-              {lessonFilter === 'finished' && 'Realizadas'}
-              {lessonFilter === 'scheduled' && 'Agendadas'}
-              <FiChevronDown className={`w-4 h-4 inline ml-2 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {showFilterDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-base-100 border border-gray-200 dark:border-base-300 rounded-lg shadow-lg z-10 overflow-hidden">
-                <button
-                  onClick={() => {
-                    setLessonFilter('all');
-                    setShowFilterDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                    lessonFilter === 'all'
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-200'
-                  }`}
-                >
-                  Todas
-                </button>
-                <button
-                  onClick={() => {
-                    setLessonFilter('finished');
-                    setShowFilterDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                    lessonFilter === 'finished'
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-200'
-                  }`}
-                >
-                  Realizadas
-                </button>
-                <button
-                  onClick={() => {
-                    setLessonFilter('scheduled');
-                    setShowFilterDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                    lessonFilter === 'scheduled'
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 dark:text-base-content hover:bg-gray-100 dark:hover:bg-base-200'
-                  }`}
-                >
-                  Agendadas
-                </button>
-              </div>
-            )}
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">Filtrar:</span>
+            <LessonStatusFilter 
+              value={lessonFilter}
+              onChange={setLessonFilter}
+            />
           </div>
-        </div>
 
-        {/* Lessons List - Grid Layout */}
-        {sortedLessons.length === 0 ? (
-          <div className="empty-state">
-            <div className="text-6xl mb-4">📅</div>
-            <h3 className="empty-state-title">
-              {lessonFilter === 'all' && 'Nenhuma aula cadastrada'}
-              {lessonFilter === 'finished' && 'Nenhuma aula realizada'}
-              {lessonFilter === 'scheduled' && 'Nenhuma aula agendada'}
-            </h3>
-            <p className="empty-state-description">
-              {lessonFilter === 'all' && 'Ainda não há aulas cadastradas para esta turma.'}
-              {lessonFilter === 'finished' && 'Ainda não há aulas realizadas.'}
-              {lessonFilter === 'scheduled' && 'Não há aulas agendadas no momento.'}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
-              {sortedLessons.map((lesson, index) => {
-                const handleLessonClick = () => {
-                  setLessonDetailModalData({
-                    lessonId: lesson.id,
-                    className: `${classData.code} - ${classData.subject?.name}`,
-                  });
-                };
-
-                const handleDeleteLesson = () => {
-                  setDeleteConfirmation({
-                    isOpen: true,
-                    lessonId: lesson.id,
-                    lessonName: lesson.name || `Aula ${index + 1}`,
-                    isLoading: false,
-                  });
-                };
-
-                return (
-                  <LessonCard
-                    key={lesson.id}
-                    lesson={{ ...lesson, name: lesson.name || `Aula ${index + 1}` } as any}
-                    onView={handleLessonClick}
-                    onEdit={handleLessonClick}
-                    onDelete={handleDeleteLesson}
-                    index={index + 1}
-                  />
-                );
-              })}
+          {/* Lessons List - Grid Layout */}
+          {sortedLessons.length === 0 ? (
+            <div className="empty-state">
+              <div className="text-6xl mb-4">📅</div>
+              <h3 className="empty-state-title">
+                {lessonFilter === 'all' && 'Nenhuma aula cadastrada'}
+                {lessonFilter === 'completed' && 'Nenhuma aula realizada'}
+                {lessonFilter === 'scheduled' && 'Nenhuma aula agendada'}
+              </h3>
+              <p className="empty-state-description">
+                {lessonFilter === 'all' && 'Ainda não há aulas cadastradas para esta turma.'}
+                {lessonFilter === 'completed' && 'Ainda não há aulas realizadas.'}
+                {lessonFilter === 'scheduled' && 'Não há aulas agendadas no momento.'}
+              </p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+                {sortedLessons.map((lesson) => {
+                  // Calcular número permanente baseado na ordem cronológica de todas as aulas
+                  const lessonNumber = getLessonNumber(lesson, lessonsData || []);
+                  
+                  // Usar nome original se existir e não for vazio, senão usar número calculado
+                  const displayName = (lesson.name && lesson.name.trim()) ? lesson.name : `Aula ${lessonNumber}`;
+                  
+                  const handleLessonClick = () => {
+                    setLessonDetailModalData({
+                      lessonId: lesson.id,
+                      className: `${classData.code} - ${classData.subject?.name}`,
+                    });
+                  };
+
+                  const handleDeleteLesson = () => {
+                    setDeleteConfirmation({
+                      isOpen: true,
+                      lessonId: lesson.id,
+                      lessonName: displayName,
+                      isLoading: false,
+                    });
+                  };
+
+                  return (
+                    <LessonCard
+                      key={lesson.id}
+                      lesson={{ ...lesson, name: displayName } as any}
+                      onView={handleLessonClick}
+                      onEdit={handleLessonClick}
+                      onDelete={handleDeleteLesson}
+                    />
+                  );
+                })}
+              </div>
           )}
         </div>
       </section>
