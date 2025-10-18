@@ -32,3 +32,10 @@ export {
   formatPhone,
   truncateText,
 } from './formatNumber';
+
+// Formatação de datas
+export {
+  formatDateLocal,
+  formatDateBR,
+  formatDateShort,
+} from './formatDate';
