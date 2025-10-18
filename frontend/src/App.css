@@ -108,3 +108,88 @@
     font-size: 0.875rem !important;
   }
 }
+
+/* ============================================
+   METROPOLIS FONT - Títulos Premium
+   ============================================ */
+
+/* Aliases para fácil uso */
+.font-metropolis,
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Heading sizes with Metropolis */
+h1 {
+  @apply text-4xl font-bold tracking-tight;
+}
+
+h2 {
+  @apply text-3xl font-bold tracking-tight;
+}
+
+h3 {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+h4 {
+  @apply text-xl font-semibold tracking-tight;
+}
+
+h5 {
+  @apply text-lg font-semibold tracking-tight;
+}
+
+h6 {
+  @apply text-base font-semibold tracking-tight;
+}
+
+/* Premium card titles */
+.card-title {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Modal titles */
+.modal-box {
+  --tw-text-opacity: 1;
+}
+
+.modal-box .modal-title {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* Button text with Metropolis */
+.btn,
+button {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+/* Label text */
+.label-text,
+label {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+/* Stats and numbers */
+.stat-title,
+.stat-value {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+/* Navigation titles */
+.navbar-title,
+.drawer-title {
+  font-family: 'Metropolis', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+

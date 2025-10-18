@@ -1,5 +1,6 @@
 import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar, FiCheckCircle, FiX } from 'react-icons/fi';
 import { useState } from 'react';
+import { formatDateShort } from '@/utils/format';
 
 interface LessonCardProps {
   lesson: {
@@ -24,8 +25,11 @@ interface LessonCardProps {
   onOpen?: (lessonId: number) => void;
   onClose?: (lessonId: number) => void;
   onView?: (lessonId: number) => void;
-  index?: number;
   isAdmin?: boolean;
+  // Props para seleção múltipla
+  isSelected?: boolean;
+  onToggleSelect?: (lessonId: number) => void;
+  showSelectCheckbox?: boolean;
 }
 
 export function LessonCard({
@@ -35,8 +39,10 @@ export function LessonCard({
   onOpen,
   onClose,
   onView,
-  index = 0,
   isAdmin = false,
+  isSelected = false,
+  onToggleSelect,
+  showSelectCheckbox = false,
 }: LessonCardProps) {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -61,12 +67,6 @@ export function LessonCard({
 
   const startTimeStr = formatTime(lesson.startTime);
   const endTimeStr = formatTime(lesson.endTime);
-
-  // Formatação de data
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }).replace(' de ', ' ');
-  };
 
   // Determinar status da aula
   const getLessonStatus = () => {
@@ -121,14 +121,31 @@ export function LessonCard({
 
   return (
     <div
-      className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6"
-      onClick={() => onView?.(lesson.id)}
+      className={`card-premium group hover:scale-102 transition-all duration-300 bg-white dark:bg-gray-800 border rounded-lg shadow-md p-4 sm:p-6 ${
+        isSelected 
+          ? 'border-primary bg-primary/5 dark:bg-primary/10' 
+          : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
+      }`}
+      onClick={() => !showSelectCheckbox && onView?.(lesson.id)}
     >
       {/* Card Header */}
       <div className="mb-3 sm:mb-4 flex items-start justify-between gap-3">
+        {/* Checkbox para seleção múltipla */}
+        {showSelectCheckbox && (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(lesson.id);
+            }}
+            className="checkbox checkbox-primary checkbox-sm mt-1 flex-shrink-0"
+          />
+        )}
+        
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-primary transition-colors">
-            {lesson.name || `Aula ${index + 1}`}
+            {lesson.name}
           </h3>
           {lesson.description && (
             <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 line-clamp-2 mb-1">
@@ -238,7 +255,7 @@ export function LessonCard({
           <div className="min-w-0">
             <p className="text-[10px] sm:text-xs text-gray-600 dark:text-base-content/70">Data</p>
             <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-              {formatDate(lesson.date)}
+              {formatDateShort(lesson.date)}
             </p>
           </div>
         </div>

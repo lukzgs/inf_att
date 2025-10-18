@@ -5,17 +5,29 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { LessonCard } from '@/components/lessons/LessonCard';
+import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
+import { filterLessonsByStatus, getLessonNumber } from '@/utils/lessonStatus';
+import { useMultiSelect } from '@/hooks/useMultiSelect';
+import { BulkDeleteBar } from '@/components/lessons/BulkDeleteBar';
+import { BulkSelectHeader } from '@/components/lessons/BulkSelectHeader';
 
 export default function ProfessorAulasPage() {
   const { data: classes, isLoading: isLoadingClasses } = useProfessorClasses();
   const { data: allLessons, isLoading: isLoadingLessons } = useLessons();
   const [sortBy, setSortBy] = useState<'recent' | 'upcoming'>('upcoming');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [showSelectMode, setShowSelectMode] = useState(false);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
   const queryClient = useQueryClient();
+
+  // Usaremos o hook de multi-select (vai ser inicializado com professorLessons)
+  const [multiSelectLessons, setMultiSelectLessons] = useState<any[]>([]);
+  const multiSelect = useMultiSelect(multiSelectLessons);
 
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
@@ -48,37 +60,24 @@ export default function ProfessorAulasPage() {
   const professorLessons = useMemo(() => {
     if (!allLessons || !classes) return [];
     
-    // DEBUG: Ver estrutura das aulas
-    if (allLessons.length > 0) {
-      console.log('🔍 Exemplo de aula:', allLessons[0]);
-      console.log('🔍 Class:', allLessons[0].class);
-      console.log('🔍 Subject:', allLessons[0].class?.subject);
-    }
-    
     const classIds = new Set(classes.map(c => c.id));
     let filtered = allLessons.filter(lesson => classIds.has(lesson.classId));
+    
+    // Filtrar por status (agendadas/realizadas) usando função utilitária
+    filtered = filterLessonsByStatus(filtered, filterStatus);
     
     // Filtrar por busca (nome da aula ou descrição)
     if (debouncedSearchTerm.trim()) {
       const search = debouncedSearchTerm.toLowerCase();
-      console.log('🔍 Buscando por:', search);
       
-      const beforeCount = filtered.length;
       filtered = filtered.filter(lesson => {
         const matchName = lesson.name?.toLowerCase().includes(search);
         const matchDescription = lesson.description?.toLowerCase().includes(search);
         const matchClass = lesson.class?.code?.toLowerCase().includes(search);
         const matchSubject = lesson.class?.subject?.name?.toLowerCase().includes(search);
         
-        const hasMatch = matchName || matchDescription || matchClass || matchSubject;
-        
-        if (hasMatch) {
-          console.log('✅ Match encontrado:', lesson.name || 'Sem nome', '- Disciplina:', lesson.class?.subject?.name);
-        }
-        
-        return hasMatch;
+        return matchName || matchDescription || matchClass || matchSubject;
       });
-      console.log(`🔍 Resultados: ${filtered.length} de ${beforeCount} aulas`);
     }
     
     // Filtrar por turma selecionada
@@ -86,18 +85,56 @@ export default function ProfessorAulasPage() {
       filtered = filtered.filter(lesson => lesson.classId === selectedClassId);
     }
     
-    // Ordenar por data
+    // Ordenar por data com lógica especial por status
     return filtered.sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.startTime}`);
-      const dateB = new Date(`${b.date}T${b.startTime}`);
+      // Extrair data e hora com tratamento correto de timezone
+      const dateA = new Date(a.date);
+      const yearA = dateA.getUTCFullYear();
+      const monthA = dateA.getUTCMonth();
+      const dayA = dateA.getUTCDate();
       
-      if (sortBy === 'upcoming') {
-        return dateA.getTime() - dateB.getTime();
-      } else {
-        return dateB.getTime() - dateA.getTime();
+      // Extrair hora de forma segura
+      const startTimeA = a.startTime?.includes('T')
+        ? a.startTime.split('T')[1].substring(0, 5)
+        : a.startTime || '00:00';
+      const [hourA, minA] = startTimeA.split(':').map(Number);
+      const dateTimeA = new Date(yearA, monthA, dayA, hourA, minA, 0, 0);
+      
+      const dateB = new Date(b.date);
+      const yearB = dateB.getUTCFullYear();
+      const monthB = dateB.getUTCMonth();
+      const dayB = dateB.getUTCDate();
+      
+      const startTimeB = b.startTime?.includes('T')
+        ? b.startTime.split('T')[1].substring(0, 5)
+        : b.startTime || '00:00';
+      const [hourB, minB] = startTimeB.split(':').map(Number);
+      const dateTimeB = new Date(yearB, monthB, dayB, hourB, minB, 0, 0);
+      
+      const timeA = dateTimeA.getTime();
+      const timeB = dateTimeB.getTime();
+      
+      // Para aulas agendadas, sempre mostrar as próximas primeiro (crescente)
+      if (filterStatus === 'scheduled') {
+        return timeA - timeB;
       }
+      
+      // Para aulas realizadas, sempre mostrar as mais recentes primeiro (decrescente)
+      if (filterStatus === 'completed') {
+        return timeB - timeA;
+      }
+      
+      // Para "todas", ordem cronológica (crescente - mais antiga primeiro)
+      return timeA - timeB;
     });
-  }, [allLessons, classes, sortBy, selectedClassId, debouncedSearchTerm]);
+  }, [allLessons, classes, sortBy, selectedClassId, debouncedSearchTerm, filterStatus]);
+
+  // Sincronizar professorLessons com multiSelect quando mudar
+  useEffect(() => {
+    setMultiSelectLessons(professorLessons);
+    multiSelect.clearSelection();
+    setShowSelectMode(false);
+  }, [professorLessons]);
 
   const isLoading = isLoadingClasses || isLoadingLessons;
 
@@ -122,6 +159,60 @@ export default function ProfessorAulasPage() {
         lessonName: lesson.name || 'Aula',
         isLoading: false,
       });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const selectedLessons = multiSelect.getSelectedItems();
+    if (selectedLessons.length === 0) return;
+
+    // Pedir confirmação
+    const confirmed = window.confirm(
+      `Tem certeza que deseja deletar ${selectedLessons.length} aula${selectedLessons.length !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`
+    );
+
+    if (!confirmed) return;
+
+    setBulkDeleteLoading(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      let successCount = 0;
+
+      await Promise.all(
+        selectedLessons.map(async (lesson) => {
+          try {
+            const response = await fetch(`http://localhost:3000/aulas/${lesson.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
+
+            if (response.ok) {
+              successCount++;
+            }
+          } catch (error) {
+            console.error(`Erro ao deletar aula ${lesson.id}:`, error);
+          }
+        })
+      );
+
+      if (successCount > 0) {
+        toast.success(`${successCount} aula${successCount !== 1 ? 's' : ''} deletada${successCount !== 1 ? 's' : ''} com sucesso!`);
+        queryClient.invalidateQueries({ queryKey: ['lessons'] });
+        multiSelect.clearSelection();
+        setShowSelectMode(false);
+      }
+
+      if (successCount < selectedLessons.length) {
+        toast.error(`Erro ao deletar ${selectedLessons.length - successCount} aula${selectedLessons.length - successCount !== 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error('Erro ao deletar aulas:', error);
+      toast.error('Erro ao deletar aulas');
+    } finally {
+      setBulkDeleteLoading(false);
     }
   };
 
@@ -163,8 +254,8 @@ export default function ProfessorAulasPage() {
       {/* Header */}
       <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-12">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
-            <FiClipboard className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <FiClipboard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           </div>
           <div className="flex-1">
             <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -237,31 +328,49 @@ export default function ProfessorAulasPage() {
 
       {/* Aulas Section */}
       <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-            Lista de Aulas
-          </h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSortBy('upcoming')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                sortBy === 'upcoming'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 dark:bg-base-300 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-200'
-              }`}
-            >
-              Próximas
-            </button>
-            <button
-              onClick={() => setSortBy('recent')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                sortBy === 'recent'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 dark:bg-base-300 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-200'
-              }`}
-            >
-              Recentes
-            </button>
+        {/* Header com seleção múltipla */}
+        <BulkSelectHeader
+          totalLessons={professorLessons.length}
+          selectedCount={multiSelect.selectionCount}
+          isAllSelected={multiSelect.isAllSelected}
+          onToggleSelectAll={multiSelect.toggleAll}
+          onShowSelectMode={setShowSelectMode}
+          showSelectMode={showSelectMode}
+        />
+
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div className="flex gap-2 flex-wrap">
+            {/* Filtro por Status */}
+            <LessonStatusFilter 
+              value={filterStatus}
+              onChange={setFilterStatus}
+            />
+            
+            {/* Ordenação */}
+            <div className="flex gap-1.5 bg-gray-100 dark:bg-base-300 rounded-lg p-1">
+              <button
+                onClick={() => setSortBy('upcoming')}
+                className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                  sortBy === 'upcoming'
+                    ? 'bg-white dark:bg-base-100 text-primary shadow-sm'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Ordenar por próximas aulas"
+              >
+                Próximas
+              </button>
+              <button
+                onClick={() => setSortBy('recent')}
+                className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                  sortBy === 'recent'
+                    ? 'bg-white dark:bg-base-100 text-primary shadow-sm'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Ordenar por aulas recentes"
+              >
+                Recentes
+              </button>
+            </div>
           </div>
         </div>
 
@@ -273,19 +382,31 @@ export default function ProfessorAulasPage() {
           </div>
         ) : professorLessons && professorLessons.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {professorLessons.map((lesson, index) => (
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                index={index}
-                onView={() => {
-                  // Link para a turma da aula
-                  window.location.href = `/professor/turmas/${lesson.classId}`;
-                }}
-                onEdit={handleEditLesson}
-                onDelete={handleDeleteLesson}
-              />
-            ))}
+            {professorLessons.map((lesson) => {
+              // Obter todas as aulas não-filtradas da turma
+              const allLessonsInClass = allLessons?.filter(l => l.classId === lesson.classId) || [];
+              // Calcular número permanente baseado na ordem cronológica
+              const lessonNumber = getLessonNumber(lesson, allLessonsInClass);
+              
+              // Usar nome original se existir e não for vazio, senão usar número calculado
+              const displayName = (lesson.name && lesson.name.trim()) ? lesson.name : `Aula ${lessonNumber}`;
+              
+              return (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={{ ...lesson, name: displayName }}
+                  onView={() => {
+                    // Link para a turma da aula
+                    window.location.href = `/professor/turmas/${lesson.classId}`;
+                  }}
+                  onEdit={handleEditLesson}
+                  onDelete={handleDeleteLesson}
+                  isSelected={multiSelect.isSelected(lesson.id)}
+                  onToggleSelect={multiSelect.toggleItem}
+                  showSelectCheckbox={showSelectMode}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -331,6 +452,17 @@ export default function ProfessorAulasPage() {
             isLoading: false,
           })
         }
+      />
+
+      {/* Barra de ação para seleção múltipla */}
+      <BulkDeleteBar
+        selectedCount={multiSelect.selectionCount}
+        onCancelSelection={() => {
+          multiSelect.clearSelection();
+          setShowSelectMode(false);
+        }}
+        onDelete={handleBulkDelete}
+        isLoading={bulkDeleteLoading}
       />
     </div>
   );

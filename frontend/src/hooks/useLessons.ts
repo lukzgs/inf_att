@@ -23,7 +23,6 @@ export interface Lesson {
   openedAt?: string;
   closedAt?: string;
   openedBy?: number;
-  isCanceled?: boolean; // Flag indicating if lesson was canceled
   hasAttendancePassword?: boolean; // Flag indicating if lesson requires password for attendance
   createdAt?: string;
   updatedAt?: string;

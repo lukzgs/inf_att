@@ -72,7 +72,7 @@ export default function TurmasPage() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-base-content/10">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 ring-2 ring-primary/20 flex items-center justify-center flex-shrink-0">
                       <FiUsers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
                     <div className="min-w-0">
@@ -84,8 +84,8 @@ export default function TurmasPage() {
                   </div>
                   
                   <div className="flex items-center gap-2 justify-end">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 ring-2 ring-orange-200 dark:ring-orange-500/30 flex items-center justify-center flex-shrink-0">
+                      <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] sm:text-xs text-gray-600 dark:text-base-content/70">Créditos</p>

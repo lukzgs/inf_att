@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import { ptBR } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { formatDateBR } from '@/utils/format';
 
 /**
  * Extrai apenas a parte do horário (HH:mm) de uma string ISO datetime
@@ -396,7 +397,7 @@ export function LessonDetailModal({
                   {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(lessonData?.date || '').toLocaleDateString('pt-BR')} • {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'} - {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
+                  {formatDateBR(lessonData?.date || '')} • {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'} - {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
                 </p>
               </div>
             </div>
@@ -521,7 +522,7 @@ export function LessonDetailModal({
                   ) : (
                     <div className="bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
                       <p className="text-gray-900 dark:text-white text-sm">
-                        {new Date(lessonData?.date || '').toLocaleDateString('pt-BR')}
+                        {formatDateBR(lessonData?.date || '')}
                       </p>
                     </div>
                   )}
