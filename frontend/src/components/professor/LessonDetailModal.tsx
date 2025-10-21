@@ -140,8 +140,10 @@ export function LessonDetailModal({
         case 'date':
           payload.date = formatDateToISO(formData.date);
           break;
-        case 'times':
+        case 'startTime':
           payload.startTime = formatTimeToISO(formData.startTime);
+          break;
+        case 'endTime':
           payload.endTime = formatTimeToISO(formData.endTime);
           break;
         case 'password':
@@ -435,7 +437,7 @@ export function LessonDetailModal({
                         />
                         <button
                           onClick={() => saveField('name')}
-                          className="btn btn-sm btn-primary text-white"
+                          className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
                           disabled={isLoading}
                         >
                           <FiSave className="w-4 h-4" />
@@ -487,7 +489,7 @@ export function LessonDetailModal({
                         />
                         <button
                           onClick={() => saveField('date')}
-                          className="btn btn-sm btn-primary text-white"
+                          className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
                           disabled={isLoading}
                         >
                           <FiSave className="w-4 h-4" />
@@ -530,24 +532,50 @@ export function LessonDetailModal({
                       </span>
                     </label>
                     <div className="flex items-center gap-2">
-                      {isFieldEditing('times') ? (
-                        <DatePicker
-                          selected={formData.startTime}
-                          onChange={(date) => date && setFormData({ ...formData, startTime: date })}
-                          showTimeSelect
-                          showTimeSelectOnly
-                          timeIntervals={15}
-                          timeCaption="Hora"
-                          dateFormat="HH:mm"
-                          locale={ptBR}
-                          className="flex-1 input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
-                        />
+                      {isFieldEditing('startTime') ? (
+                        <>
+                          <DatePicker
+                            selected={formData.startTime}
+                            onChange={(date) => date && setFormData({ ...formData, startTime: date })}
+                            showTimeSelect
+                            showTimeSelectOnly
+                            timeIntervals={15}
+                            timeCaption="Hora"
+                            dateFormat="HH:mm"
+                            locale={ptBR}
+                            className="flex-1 input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
+                          />
+                          <button
+                            onClick={() => saveField('startTime')}
+                            className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
+                            disabled={isLoading}
+                          >
+                            <FiSave className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              stopEditingField('startTime');
+                              setFormData({ ...formData, startTime: new Date(lessonData?.startTime || '') });
+                            }}
+                            className="btn btn-sm btn-ghost"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </>
                       ) : (
-                        <div className="flex-1 bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
-                          <p className="text-gray-900 dark:text-white text-sm">
-                            {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'}
-                          </p>
-                        </div>
+                        <>
+                          <div className="flex-1 bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                            <p className="text-gray-900 dark:text-white text-sm">
+                              {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => startEditingField('startTime')}
+                            className="btn btn-sm btn-ghost text-primary"
+                          >
+                            <FiEdit2 className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -560,66 +588,54 @@ export function LessonDetailModal({
                       </span>
                     </label>
                     <div className="flex items-center gap-2">
-                      {isFieldEditing('times') ? (
-                        <DatePicker
-                          selected={formData.endTime}
-                          onChange={(date) => date && setFormData({ ...formData, endTime: date })}
-                          showTimeSelect
-                          showTimeSelectOnly
-                          timeIntervals={15}
-                          timeCaption="Hora"
-                          dateFormat="HH:mm"
-                          locale={ptBR}
-                          className="flex-1 input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
-                        />
+                      {isFieldEditing('endTime') ? (
+                        <>
+                          <DatePicker
+                            selected={formData.endTime}
+                            onChange={(date) => date && setFormData({ ...formData, endTime: date })}
+                            showTimeSelect
+                            showTimeSelectOnly
+                            timeIntervals={15}
+                            timeCaption="Hora"
+                            dateFormat="HH:mm"
+                            locale={ptBR}
+                            className="flex-1 input input-bordered w-full bg-white dark:bg-base-100 border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
+                          />
+                          <button
+                            onClick={() => saveField('endTime')}
+                            className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
+                            disabled={isLoading}
+                          >
+                            <FiSave className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              stopEditingField('endTime');
+                              setFormData({ ...formData, endTime: new Date(lessonData?.endTime || '') });
+                            }}
+                            className="btn btn-sm btn-ghost"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </>
                       ) : (
-                        <div className="flex-1 bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
-                          <p className="text-gray-900 dark:text-white text-sm">
-                            {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
-                          </p>
-                        </div>
+                        <>
+                          <div className="flex-1 bg-gray-50 dark:bg-base-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-base-content/10">
+                            <p className="text-gray-900 dark:text-white text-sm">
+                              {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => startEditingField('endTime')}
+                            className="btn btn-sm btn-ghost text-primary"
+                          >
+                            <FiEdit2 className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
-
-                {/* Times Action Buttons (appear only when editing times) */}
-                {isFieldEditing('times') && (
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => saveField('times')}
-                      className="btn btn-sm btn-primary text-white"
-                      disabled={isLoading}
-                    >
-                      <FiSave className="w-4 h-4" /> Salvar
-                    </button>
-                    <button
-                      onClick={() => {
-                        stopEditingField('times');
-                        setFormData({
-                          ...formData,
-                          startTime: new Date(lessonData?.startTime || ''),
-                          endTime: new Date(lessonData?.endTime || ''),
-                        });
-                      }}
-                      className="btn btn-sm btn-ghost"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                )}
-
-                {/* Edit Times Button (appears only when not editing) */}
-                {!isFieldEditing('times') && (
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => startEditingField('times')}
-                      className="btn btn-sm btn-ghost text-primary gap-1"
-                    >
-                      <FiEdit2 className="w-4 h-4" /> Editar Horários
-                    </button>
-                  </div>
-                )}
 
                 {/* Password Field */}
                 <div className="form-control">
@@ -641,7 +657,7 @@ export function LessonDetailModal({
                         />
                         <button
                           onClick={() => saveField('password')}
-                          className="btn btn-sm btn-primary text-white"
+                          className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
                           disabled={isLoading}
                         >
                           <FiSave className="w-4 h-4" />
@@ -691,7 +707,7 @@ export function LessonDetailModal({
                         <div className="flex gap-2 mt-2">
                           <button
                             onClick={() => saveField('description')}
-                            className="btn btn-sm btn-primary text-white"
+                            className="btn btn-sm bg-cyan-500 hover:bg-cyan-600 text-white border-0"
                             disabled={isLoading}
                           >
                             <FiSave className="w-4 h-4" />
