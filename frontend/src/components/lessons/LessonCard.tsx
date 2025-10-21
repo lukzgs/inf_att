@@ -78,27 +78,54 @@ export function LessonCard({
       };
     }
     
-    // Verificar se a aula já passou (data + endTime < agora)
+    // Verificar se a aula está em progresso ou já passou
     const now = new Date();
     try {
-      // Parse da data - suporta tanto YYYY-MM-DD quanto ISO DateTime
-      let lessonDate: Date;
+      // Parse da data sem conversão UTC - extrai componentes localmente
+      let year: number, month: number, day: number;
       
       if (lesson.date.includes('T')) {
-        // Se for ISO DateTime completo (ex: 2024-10-16T00:00:00.000Z)
-        lessonDate = new Date(lesson.date);
+        // Se for ISO DateTime (ex: 2024-10-16T00:00:00.000Z)
+        const dateObj = new Date(lesson.date);
+        year = dateObj.getUTCFullYear();
+        month = dateObj.getUTCMonth();
+        day = dateObj.getUTCDate();
       } else {
-        // Se for apenas data YYYY-MM-DD
-        lessonDate = new Date(lesson.date + 'T00:00:00');
+        // Se for apenas data YYYY-MM-DD, parse manualmente
+        const [y, m, d] = lesson.date.split('-').map(Number);
+        year = y;
+        month = m - 1; // Month é 0-indexed
+        day = d;
       }
       
-      // Adicionar horário de término
-      const [hours, minutes] = endTimeStr.split(':').map(Number);
-      lessonDate.setHours(hours, minutes, 0, 0);
+      // Criar timestamps para início e término usando componentes extraídos localmente
+      const [startHours, startMinutes] = startTimeStr.split(':').map(Number);
+      const [endHours, endMinutes] = endTimeStr.split(':').map(Number);
       
-      const isPast = lessonDate < now;
+      const startDateTime = new Date(year, month, day, startHours, startMinutes, 0, 0);
+      const endDateTime = new Date(year, month, day, endHours, endMinutes, 0, 0);
       
-      if (isPast || lesson.closedAt) {
+      // Se a aula já foi fechada manualmente, considerar como concluída
+      if (lesson.closedAt) {
+        return {
+          status: 'completed',
+          icon: <FiCheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />,
+          bgColor: 'bg-green-50 dark:bg-green-500/10 ring-2 ring-green-200 dark:ring-green-500/30',
+        };
+      }
+      
+      // Se está dentro do horário da aula, é "em progresso"
+      if (now >= startDateTime && now <= endDateTime) {
+        return {
+          status: 'in-progress',
+          icon: <FiClock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 dark:text-orange-400" />,
+          bgColor: 'bg-orange-50 dark:bg-orange-500/10 ring-2 ring-orange-200 dark:ring-orange-500/30',
+        };
+      }
+      
+      // Se passou o horário de término, é concluída
+      const isPast = endDateTime < now;
+      if (isPast) {
         return {
           status: 'completed',
           icon: <FiCheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />,

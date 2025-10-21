@@ -288,7 +288,7 @@ export default function ClassDetailPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
                 {sortedLessons.map((lesson) => {
                   // Calcular número permanente baseado na ordem cronológica de todas as aulas
                   const lessonNumber = getLessonNumber(lesson, lessonsData || []);
@@ -360,7 +360,7 @@ export default function ClassDetailPage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6 animate-fade-in-up">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6 animate-fade-in-up">
                   {studentsWithStats.map((student) => (
                     <div key={student.userId} className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6">
                       {/* Avatar and Name */}

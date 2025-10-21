@@ -90,51 +90,6 @@ export function LessonDetailModal({
     attendancePassword: '',
   });
 
-  // Função para verificar se a aula está disponível para registro de presença
-  const getLessonStatus = () => {
-    if (!lessonData) return { status: 'unknown', label: 'Carregando...', color: 'badge-ghost' };
-    
-    const now = new Date();
-    const lessonDate = new Date(lessonData.date);
-    
-    // Extrai HH:mm do formato ISO
-    const startTimeStr = extractTimeFromISO(lessonData.startTime);
-    const endTimeStr = extractTimeFromISO(lessonData.endTime);
-    const [startHour, startMin] = startTimeStr.split(':');
-    const [endHour, endMin] = endTimeStr.split(':');
-    
-    const startTime = new Date(lessonDate);
-    startTime.setHours(parseInt(startHour), parseInt(startMin));
-    
-    const endTime = new Date(lessonDate);
-    endTime.setHours(parseInt(endHour), parseInt(endMin));
-
-    if (now < startTime) {
-      return { 
-        status: 'upcoming', 
-        label: 'Não iniciada', 
-        color: 'badge-warning',
-        icon: FiClock 
-      };
-    }
-
-    if (now > endTime) {
-      return { 
-        status: 'finished', 
-        label: 'Encerrada', 
-        color: 'badge-ghost',
-        icon: FiXCircle 
-      };
-    }
-
-    return { 
-      status: 'active', 
-      label: 'Disponível para presença', 
-      color: 'badge-success',
-      icon: FiCheckCircle 
-    };
-  };
-
   // Fetch lesson data
   useEffect(() => {
     if (isOpen && lessonId) {
@@ -413,22 +368,7 @@ export function LessonDetailModal({
           <div className="p-6 space-y-5">
         {/* Actions Bar - Minimalista estilo NotificationCenter */}
         <div className="flex items-center justify-between">
-          {/* Status Badge */}
-          {(() => {
-            const status = getLessonStatus();
-            const Icon = status.icon || FiClock;
-            const statusColors = {
-              'badge-success': 'text-green-700 dark:text-green-400',
-              'badge-warning': 'text-yellow-700 dark:text-yellow-400',
-              'badge-ghost': 'text-gray-600 dark:text-gray-400',
-            };
-            return (
-              <div className={`flex items-center gap-2 font-medium text-sm ${statusColors[status.color as keyof typeof statusColors] || statusColors['badge-ghost']}`}>
-                <Icon className="w-4 h-4" /> 
-                {status.label}
-              </div>
-            );
-          })()}
+          {/* Status Badge - REMOVED */}
 
           <div className="flex items-center gap-2">
               {!isEditing && (
