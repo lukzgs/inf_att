@@ -522,8 +522,8 @@ export function LessonDetailModal({
                   </div>
                 </div>
 
-                {/* Times Fields - Side by side */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Times Fields - Responsive: 1 col mobile, 2 cols tablet+ */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Start Time */}
                   <div className="form-control">
                     <label className="label">
