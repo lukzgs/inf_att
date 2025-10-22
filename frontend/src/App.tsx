@@ -134,7 +134,7 @@ function App() {
             } />
             
             {/* Professor Routes - Sem Suspense para carregamento mais rápido */}
-            <Route path="turmas" element={<TurmasPage />} />
+            <Route path="professor/turmas" element={<TurmasPage />} />
             <Route path="professor/turmas/:id" element={<ClassDetailPage />} />
             <Route path="professor/aulas" element={<ProfessorAulasPage />} />
             <Route path="professor/alunos" element={<ProfessorAlunosPage />} />

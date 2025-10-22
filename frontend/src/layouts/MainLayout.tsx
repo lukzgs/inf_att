@@ -195,7 +195,7 @@ export default function MainLayout() {
                     </li>
                   )}
                   <NavItem 
-                    to="/turmas" 
+                    to="/professor/turmas" 
                     icon={<FiUsers size={20} />} 
                     label="Turmas"
                     onClick={closeSidebar}

@@ -247,11 +247,11 @@ export default function ClassDetailPage() {
           {/* Header: Título e Botão Nova Aula */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-0">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mb-0 border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
                 Aulas
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {lessonsData?.length || 0} aula(s) cadastrada(s)
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {lessonsData?.length || 0} aula{lessonsData?.length !== 1 ? 's' : ''} cadastrada{lessonsData?.length !== 1 ? 's' : ''}
               </p>
             </div>
             <button
@@ -335,11 +335,11 @@ export default function ClassDetailPage() {
             onClick={() => setShowStudents(!showStudents)}
           >
             <div className="flex-1">
-              <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-0">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mb-0 border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
                 Alunos Matriculados
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {students.length} aluno(s) • Frequência média: {avgFrequency.toFixed(1)}%
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {students.length} aluno{students.length !== 1 ? 's' : ''} • Frequência média: {avgFrequency.toFixed(1)}%
               </p>
             </div>
             <div className={`transition-transform duration-300 flex-shrink-0 ml-4 ${showStudents ? 'rotate-180' : ''}`}>

@@ -16,7 +16,6 @@ import { BulkSelectHeader } from '@/components/lessons/BulkSelectHeader';
 export default function ProfessorAulasPage() {
   const { data: classes, isLoading: isLoadingClasses } = useProfessorClasses();
   const { data: allLessons, isLoading: isLoadingLessons } = useLessons();
-  const [sortBy, setSortBy] = useState<'recent' | 'upcoming'>('upcoming');
   const [filterStatus, setFilterStatus] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -127,7 +126,7 @@ export default function ProfessorAulasPage() {
       // Para "todas", ordem cronológica (crescente - mais antiga primeiro)
       return timeA - timeB;
     });
-  }, [allLessons, classes, sortBy, selectedClassId, debouncedSearchTerm, filterStatus]);
+  }, [allLessons, classes, selectedClassId, debouncedSearchTerm, filterStatus]);
 
   // Sincronizar professorLessons com multiSelect quando mudar
   useEffect(() => {
@@ -345,32 +344,6 @@ export default function ProfessorAulasPage() {
               value={filterStatus}
               onChange={setFilterStatus}
             />
-            
-            {/* Ordenação */}
-            <div className="flex gap-1.5 bg-gray-100 dark:bg-base-300 rounded-lg p-1">
-              <button
-                onClick={() => setSortBy('upcoming')}
-                className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                  sortBy === 'upcoming'
-                    ? 'bg-white dark:bg-base-100 text-primary shadow-sm'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Ordenar por próximas aulas"
-              >
-                Próximas
-              </button>
-              <button
-                onClick={() => setSortBy('recent')}
-                className={`px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                  sortBy === 'recent'
-                    ? 'bg-white dark:bg-base-100 text-primary shadow-sm'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                title="Ordenar por aulas recentes"
-              >
-                Recentes
-              </button>
-            </div>
           </div>
         </div>
 
@@ -395,10 +368,7 @@ export default function ProfessorAulasPage() {
                 <LessonCard
                   key={lesson.id}
                   lesson={{ ...lesson, name: displayName }}
-                  onView={() => {
-                    // Link para a turma da aula
-                    window.location.href = `/professor/turmas/${lesson.classId}`;
-                  }}
+                  onView={() => handleEditLesson(lesson.id)}
                   onEdit={handleEditLesson}
                   onDelete={handleDeleteLesson}
                   isSelected={multiSelect.isSelected(lesson.id)}

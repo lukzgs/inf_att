@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiEdit2, FiClock, FiCalendar, FiUsers, FiCheckCircle, FiXCircle, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiX, FiEdit2, FiClock, FiCalendar, FiUsers, FiCheckCircle, FiXCircle, FiSave, FiTrash2, FiFileText } from 'react-icons/fi';
 import { toast } from 'sonner';
 import DatePicker from 'react-datepicker';
 import { ptBR } from 'date-fns/locale';
@@ -108,6 +108,9 @@ export function LessonDetailModal({
   const isFieldEditing = (fieldName: string) => {
     return editingFields.has(fieldName);
   };
+  
+  // Estado para filtro de presença na lista de estudantes
+  const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'present' | 'absent' | 'pending'>('all');
   
   // Salvar um campo específico
   const saveField = async (fieldName: string) => {
@@ -384,7 +387,7 @@ export function LessonDetailModal({
                 <FiCalendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900 dark:text-white">
+                <h2 className="font-bold text-lg text-gray-900 dark:text-white">
                   {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -402,28 +405,34 @@ export function LessonDetailModal({
 
           {/* Content */}
           <div className="p-6 space-y-5">
-            {/* Actions Bar */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="px-3 py-1.5 bg-gray-100 dark:bg-base-200 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex items-center gap-1.5 text-sm"
-                  disabled={isLoading}
-                >
-                  <FiTrash2 className="w-4 h-4" /> Deletar
-                </button>
-              </div>
-            </div>
-
             {/* Lesson Details */}
             <div className="bg-white dark:bg-base-100 rounded-xl p-5 border border-gray-200 dark:border-base-content/10">
-              <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4">Informações da Aula</h4>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-base-200 flex items-center justify-center">
+                    <FiCalendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <h4 className="font-bold text-lg text-gray-900 dark:text-white">Informações da Aula</h4>
+                </div>
+                <button 
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-base-200 text-red-600 dark:text-red-400 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex items-center gap-1.5 text-sm flex-shrink-0"
+                  disabled={isLoading}
+                  title="Deletar aula"
+                >
+                  <FiTrash2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Deletar</span>
+                </button>
+              </div>
               
               <div className="space-y-4">
                 {/* Name Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400">Título/Tópico</span>
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiEdit2 className="w-4 h-4" />
+                      Título/Tópico
+                    </span>
                   </label>
                   <div className="flex items-center gap-2">
                     {isFieldEditing('name') ? (
@@ -693,7 +702,10 @@ export function LessonDetailModal({
                 {/* Description Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400">Descrição</span>
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiFileText className="w-4 h-4" />
+                      Descrição
+                    </span>
                   </label>
                   <div className="flex items-start gap-2">
                     {isFieldEditing('description') ? (
@@ -744,100 +756,145 @@ export function LessonDetailModal({
             </div>
 
             {/* Info Alert */}
-            <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <FiClock className="w-3 h-3 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-blue-900 dark:text-blue-200">
-                    <strong>Presença Automática:</strong> A aula abre automaticamente no horário de início e fecha no horário de término. Alunos podem registrar presença durante esse período.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Attendance Section */}
-            <div className="bg-white dark:bg-base-100 rounded-xl p-5 border border-gray-200 dark:border-base-content/10">
-              <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <FiUsers className="w-5 h-5" /> Lista de Presença
-              </h4>
+            <div className="rounded-xl p-5 border border-gray-200 dark:border-base-content/10 bg-white dark:bg-base-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-base-200 flex items-center justify-center">
+                  <FiUsers className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </div>
+                <h4 className="font-bold text-lg text-gray-900 dark:text-white">Lista de Presença</h4>
+              </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-3 mb-5">
-                <div className="bg-green-50 dark:bg-green-500/10 rounded-lg p-3 ring-2 ring-green-200 dark:ring-green-500/30">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Presentes</span>
+              {/* Filter Tabs - Coloridas */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                <button
+                  onClick={() => setAttendanceFilter('all')}
+                  className={`group p-3 sm:p-4 rounded-xl transition-all duration-200 flex flex-col items-center ${
+                    attendanceFilter === 'all'
+                      ? 'bg-cyan-50 dark:bg-cyan-500/10 border-2 border-cyan-300 dark:border-cyan-500'
+                      : 'bg-gray-100 dark:bg-base-300 border-2 border-transparent hover:border-gray-300 dark:hover:border-base-content/20'
+                  }`}
+                  title="Total"
+                >
+                  <FiUsers className="w-4 h-4 text-gray-600 dark:text-gray-400 mb-2" />
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Total</span>
+                  <div className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 dark:text-white">
+                    {classStudents.length}
                   </div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{presentCount}</div>
-                </div>
-                <div className="bg-red-50 dark:bg-red-500/10 rounded-lg p-3 ring-2 ring-red-200 dark:ring-red-500/30">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FiXCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Ausentes</span>
+                </button>
+
+                <button
+                  onClick={() => setAttendanceFilter('present')}
+                  className={`group p-3 sm:p-4 rounded-xl transition-all duration-200 flex flex-col items-center ${
+                    attendanceFilter === 'present'
+                      ? 'bg-green-50 dark:bg-green-500/10 border-2 border-green-300 dark:border-green-500'
+                      : 'bg-gray-100 dark:bg-base-300 border-2 border-transparent hover:border-gray-300 dark:hover:border-base-content/20'
+                  }`}
+                  title="Presentes"
+                >
+                  <FiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mb-2" />
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Presentes</span>
+                  <div className="text-2xl sm:text-3xl font-heading font-bold text-green-600 dark:text-green-400">
+                    {presentCount}
                   </div>
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{absentCount}</div>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-lg p-3 ring-2 ring-yellow-200 dark:ring-yellow-500/30">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FiClock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Pendente</span>
+                </button>
+
+                <button
+                  onClick={() => setAttendanceFilter('absent')}
+                  className={`group p-3 sm:p-4 rounded-xl transition-all duration-200 flex flex-col items-center ${
+                    attendanceFilter === 'absent'
+                      ? 'bg-red-50 dark:bg-red-500/10 border-2 border-red-300 dark:border-red-500'
+                      : 'bg-gray-100 dark:bg-base-300 border-2 border-transparent hover:border-gray-300 dark:hover:border-base-content/20'
+                  }`}
+                  title="Ausentes"
+                >
+                  <FiXCircle className="w-4 h-4 text-red-600 dark:text-red-400 mb-2" />
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Ausentes</span>
+                  <div className="text-2xl sm:text-3xl font-heading font-bold text-red-600 dark:text-red-400">
+                    {absentCount}
                   </div>
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{notRegisteredCount}</div>
-                </div>
+                </button>
+
+                <button
+                  onClick={() => setAttendanceFilter('pending')}
+                  className={`group p-3 sm:p-4 rounded-xl transition-all duration-200 flex flex-col items-center ${
+                    attendanceFilter === 'pending'
+                      ? 'bg-yellow-50 dark:bg-yellow-500/10 border-2 border-yellow-300 dark:border-yellow-500'
+                      : 'bg-gray-100 dark:bg-base-300 border-2 border-transparent hover:border-gray-300 dark:hover:border-base-content/20'
+                  }`}
+                  title="Pendentes"
+                >
+                  <FiClock className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mb-2" />
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Pendentes</span>
+                  <div className="text-2xl sm:text-3xl font-heading font-bold text-yellow-600 dark:text-yellow-400">
+                    {notRegisteredCount}
+                  </div>
+                </button>
               </div>
 
               {/* Students List */}
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {studentsWithAttendance.map((student) => (
-                  <div 
-                    key={student.id}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-base-100 rounded-lg hover:bg-gray-100 dark:hover:bg-base-200 transition-colors border border-gray-200 dark:border-base-content/10"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="avatar placeholder">
-                        <div className="bg-neutral-focus text-neutral-content rounded-full w-10 h-10">
-                          <span className="text-sm">
-                            {student.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                          </span>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {(() => {
+                  let filteredStudents = studentsWithAttendance;
+                  
+                  if (attendanceFilter === 'present') {
+                    filteredStudents = filteredStudents.filter(s => s.isPresent);
+                  } else if (attendanceFilter === 'absent') {
+                    filteredStudents = filteredStudents.filter(s => !s.isPresent && s.hasRecord);
+                  } else if (attendanceFilter === 'pending') {
+                    filteredStudents = filteredStudents.filter(s => !s.hasRecord);
+                  }
+                  
+                  return filteredStudents.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FiUsers className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">
+                        {attendanceFilter === 'all' && 'Nenhum estudante nesta turma'}
+                        {attendanceFilter === 'present' && 'Nenhum estudante marcado como presente'}
+                        {attendanceFilter === 'absent' && 'Nenhum estudante marcado como ausente'}
+                        {attendanceFilter === 'pending' && 'Todos os estudantes já foram registrados'}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredStudents.map((student) => (
+                      <div 
+                        key={student.id}
+                        className="p-3 bg-white dark:bg-base-100 rounded-lg border border-gray-200 dark:border-base-content/20 hover:border-gray-300 dark:hover:border-base-content/40 transition-all"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="avatar placeholder flex-shrink-0">
+                              <div className="bg-gray-300 dark:bg-base-300 text-gray-700 dark:text-gray-300 rounded-full w-9 h-9 text-xs font-bold">
+                                {student.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                                {student.name}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {student.email}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={() => handleToggleAttendance(student.id, student.isPresent)}
+                            className={`px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all flex-shrink-0 ${
+                              student.isPresent 
+                                ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/30' 
+                                : 'bg-gray-100 dark:bg-base-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-300'
+                            }`}
+                            disabled={isLoading}
+                            title={student.isPresent ? 'Marcar como ausente' : 'Marcar como presente'}
+                          >
+                            {student.isPresent ? 'Presente' : 'Marcar'}
+                          </button>
                         </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-base text-gray-900 dark:text-white">{student.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{student.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {student.isPresent ? (
-                        <span className="badge badge-success gap-1 text-base">
-                          <FiCheckCircle className="w-4 h-4" /> Presente
-                        </span>
-                      ) : student.hasRecord ? (
-                        <span className="badge badge-error gap-1 text-base">
-                          <FiXCircle className="w-4 h-4" /> Ausente
-                        </span>
-                      ) : (
-                        <span className="badge badge-warning gap-1 text-base">
-                          Não Registrado
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => handleToggleAttendance(student.id, student.isPresent)}
-                        className={`btn-premium-outline text-base ${
-                          student.isPresent 
-                            ? '!bg-error/10 !border-error !text-error hover:!bg-error hover:!text-white' 
-                            : '!bg-success/10 !border-success !text-success hover:!bg-success hover:!text-white'
-                        }`}
-                        disabled={isLoading}
-                      >
-                        {student.isPresent ? 'Marcar Falta' : 'Marcar Presente'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -853,7 +910,6 @@ export function LessonDetailModal({
         message="Tem certeza que deseja deletar esta aula? Esta ação não pode ser desfeita."
         confirmText="Deletar"
         cancelText="Cancelar"
-        confirmButtonClass="btn-error"
         isLoading={isLoading}
       />
     </>

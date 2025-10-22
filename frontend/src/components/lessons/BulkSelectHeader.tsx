@@ -18,10 +18,10 @@ export function BulkSelectHeader({
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
-        <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
+        <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
           Aulas
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2">
           {totalLessons} aula{totalLessons !== 1 ? 's' : ''} cadastrada{totalLessons !== 1 ? 's' : ''}
         </p>
       </div>
@@ -54,9 +54,9 @@ export function BulkSelectHeader({
       {!showSelectMode && totalLessons > 0 && (
         <button
           onClick={() => onShowSelectMode(true)}
-          className="btn btn-sm btn-outline btn-primary"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition-all flex items-center gap-2"
         >
-          📋 Selecionar
+          Selecionar
         </button>
       )}
     </div>

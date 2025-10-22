@@ -29,10 +29,15 @@ export default function TurmasPage() {
 
       {/* Turmas Section */}
       <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-            Minhas Turmas
-          </h2>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
+              Turmas
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2">
+              {classes?.length || 0} turma{classes?.length !== 1 ? 's' : ''} lecionada{classes?.length !== 1 ? 's' : ''}
+            </p>
+          </div>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
             className="flex-shrink-0 btn-premium gap-2 text-sm sm:text-base p-2 sm:p-3 rounded-lg hover:sm:scale-105 active:scale-95 transition-transform"

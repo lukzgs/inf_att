@@ -22,10 +22,14 @@ export const getLessonStatus = (lesson: any): LessonStatusType => {
   try {
     let lessonDate: Date;
 
+    // Extrair componentes da data (YYYY-MM-DD)
     if (lesson.date.includes('T')) {
-      lessonDate = new Date(lesson.date);
+      // Se for ISO completo, extrair apenas a data
+      lessonDate = new Date(lesson.date.split('T')[0] + 'T00:00:00');
     } else {
-      lessonDate = new Date(lesson.date + 'T00:00:00');
+      // Se for apenas YYYY-MM-DD, parsear manualmente para evitar UTC
+      const [year, month, day] = lesson.date.split('-').map(Number);
+      lessonDate = new Date(year, month - 1, day, 0, 0, 0, 0);
     }
 
     // Extrair horário de término
@@ -73,9 +77,24 @@ export const getLessonNumber = (lesson: any, allLessonsInClass: any[]): number =
 
   // Ordenar todas as aulas da turma por data cronológica
   const sortedByDate = [...allLessonsInClass].sort((a, b) => {
-    // Extrair data base (sem hora)
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
+    // Extrair data base (sem hora) - parseando manualmente para evitar UTC
+    let dateA: Date, dateB: Date;
+    
+    if (a.date.includes('T')) {
+      const [year, month, day] = a.date.split('T')[0].split('-').map(Number);
+      dateA = new Date(year, month - 1, day, 0, 0, 0, 0);
+    } else {
+      const [year, month, day] = a.date.split('-').map(Number);
+      dateA = new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+    
+    if (b.date.includes('T')) {
+      const [year, month, day] = b.date.split('T')[0].split('-').map(Number);
+      dateB = new Date(year, month - 1, day, 0, 0, 0, 0);
+    } else {
+      const [year, month, day] = b.date.split('-').map(Number);
+      dateB = new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
     
     // Extrair horário limpo
     const timeA = extractTime(a.startTime);
@@ -85,13 +104,10 @@ export const getLessonNumber = (lesson: any, allLessonsInClass: any[]): number =
     const [hourA, minA] = timeA.split(':').map(Number);
     const [hourB, minB] = timeB.split(':').map(Number);
     
-    const fullDateA = new Date(dateA);
-    fullDateA.setHours(hourA, minA, 0, 0);
+    dateA.setHours(hourA, minA, 0, 0);
+    dateB.setHours(hourB, minB, 0, 0);
     
-    const fullDateB = new Date(dateB);
-    fullDateB.setHours(hourB, minB, 0, 0);
-    
-    return fullDateA.getTime() - fullDateB.getTime();
+    return dateA.getTime() - dateB.getTime();
   });
 
   // Encontrar o índice da aula e retornar como número (1-indexed)
