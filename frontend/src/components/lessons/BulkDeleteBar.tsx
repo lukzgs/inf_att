@@ -21,7 +21,9 @@ export function BulkDeleteBar({
         {/* Informação */}
         <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
           <span className="text-primary font-bold">{selectedCount}</span>
-          {selectedCount === 1 ? ' aula selecionada' : ' aulas selecionadas'}
+          <span className="hidden sm:inline">
+            {selectedCount === 1 ? ' aula selecionada' : ' aulas selecionadas'}
+          </span>
         </div>
 
         {/* Separador */}

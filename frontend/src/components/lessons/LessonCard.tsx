@@ -166,7 +166,7 @@ export function LessonCard({
               e.stopPropagation();
               onToggleSelect?.(lesson.id);
             }}
-            className="checkbox checkbox-primary checkbox-sm mt-1 flex-shrink-0"
+            className="checkbox checkbox-sm checked:bg-primary checked:border-primary border border-gray-400 dark:border-gray-500 mt-1 flex-shrink-0"
           />
         )}
         

@@ -330,7 +330,6 @@ export default function ProfessorAulasPage() {
         {/* Header com seleção múltipla */}
         <BulkSelectHeader
           totalLessons={professorLessons.length}
-          selectedCount={multiSelect.selectionCount}
           isAllSelected={multiSelect.isAllSelected}
           onToggleSelectAll={multiSelect.toggleAll}
           onShowSelectMode={setShowSelectMode}

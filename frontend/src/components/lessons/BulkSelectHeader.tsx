@@ -1,6 +1,5 @@
 interface BulkSelectHeaderProps {
   totalLessons: number;
-  selectedCount: number;
   isAllSelected: boolean;
   onToggleSelectAll: () => void;
   onShowSelectMode: (show: boolean) => void;
@@ -9,7 +8,6 @@ interface BulkSelectHeaderProps {
 
 export function BulkSelectHeader({
   totalLessons,
-  selectedCount,
   isAllSelected,
   onToggleSelectAll,
   onShowSelectMode,
@@ -34,27 +32,19 @@ export function BulkSelectHeader({
               type="checkbox"
               checked={isAllSelected}
               onChange={onToggleSelectAll}
-              className="checkbox checkbox-primary checkbox-sm"
+              className="checkbox checkbox-sm checked:bg-primary checked:border-primary border border-gray-400 dark:border-gray-500"
             />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {selectedCount > 0 ? `${selectedCount} selecionada${selectedCount !== 1 ? 's' : ''}` : 'Selecionar tudo'}
+              Selecionar tudo
             </span>
           </label>
-
-          {/* Botão para sair do modo seleção */}
-          <button
-            onClick={() => onShowSelectMode(false)}
-            className="btn btn-sm btn-ghost text-gray-600 dark:text-gray-400"
-          >
-            ✕ Cancelar
-          </button>
         </div>
       )}
 
       {!showSelectMode && totalLessons > 0 && (
         <button
           onClick={() => onShowSelectMode(true)}
-          className="px-4 py-2 sm:px-5 sm:py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium text-sm transition-all flex items-center gap-2"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium text-sm transition-all flex items-center gap-2 dark:bg-gray-900 dark:hover:bg-gray-800"
         >
           Selecionar
         </button>

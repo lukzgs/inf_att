@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiX, FiCalendar, FiClock, FiLock, FiRepeat, FiInfo } from 'react-icons/fi';
+import { FiX, FiCalendar, FiClock, FiLock, FiRepeat, FiInfo, FiBook } from 'react-icons/fi';
 import { toast } from 'sonner';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -259,45 +259,45 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-base-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-base-content/10 sticky top-0 bg-white dark:bg-base-200 z-10">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Criar Nova Aula
-            </h2>
-            <p className="text-base text-gray-600 dark:text-base-content/70 mt-1">
-              Preencha os dados da aula ou crie aulas recorrentes
-            </p>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white dark:bg-base-100 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 dark:border-base-300 overflow-hidden">
+        
+        {/* Header - Inspirado em NotificationCenter */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-base-300 bg-gradient-to-r from-white to-gray-50 dark:from-base-100 dark:to-gray-800/50 flex-shrink-0">
+          <h3 className="text-lg font-extrabold flex items-center gap-3 text-gray-900 dark:text-white">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+              <FiBook className="text-gray-600 dark:text-gray-400" size={20} />
+            </div>
+            <span>Criar Nova Aula</span>
+          </h3>
           <button
             onClick={handleClose}
-            className="btn btn-ghost btn-sm btn-circle"
+            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-200 dark:hover:text-gray-300 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+            title="Fechar"
+            disabled={createLessonMutation.isPending}
           >
-            <FiX className="w-5 h-5" />
+            <FiX size={20} />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="p-6 space-y-6">
+        {/* Form Content */}
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="flex-1 overflow-y-auto p-6 space-y-5">
           
-          {/* Recorrência Toggle */}
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <FiRepeat className="w-5 h-5 text-primary" />
-                <span className="font-medium text-base text-gray-900 dark:text-white">
-                  Aulas Recorrentes
-                </span>
+          {/* Recorrência Card */}
+          <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-base-content/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+                  <FiRepeat className="text-gray-600 dark:text-gray-400" size={18} />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">Aulas Recorrentes</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Criar múltiplas aulas automaticamente</p>
+                </div>
               </div>
               <input
                 type="checkbox"
-                className="toggle toggle-lg bg-gray-300 border-gray-400 
-                          [--tglbg:theme(colors.gray.300)] 
-                          checked:bg-primary checked:border-primary
-                          hover:bg-gray-400 dark:bg-gray-600 dark:border-gray-500
-                          dark:checked:bg-primary dark:checked:border-primary"
+                className="toggle toggle-sm"
                 checked={isRecurring}
                 onChange={(e) => {
                   const checked = e.target.checked;
@@ -310,58 +310,139 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                 }}
               />
             </div>
-            <p className="text-base text-gray-600 dark:text-base-content/70">
-              Crie múltiplas aulas automaticamente nos mesmos dias da semana
-            </p>
           </div>
 
-          {/* Data Inicial */}
-          <div>
-            <label className="label">
-              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                <FiCalendar className="inline w-4 h-4 mr-2" />
-                {isRecurring ? 'Data Inicial *' : 'Data da Aula *'}
-              </span>
-            </label>
-            <Controller
-              control={control}
-              name="date"
-              render={({ field }) => (
-                <DatePicker
-                  selected={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  dateFormat="dd/MM/yyyy"
-                  locale={ptBR}
-                  minDate={new Date()}
-                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
-                  calendarClassName="bg-white dark:bg-base-200"
-                  placeholderText="Selecione a data"
+          {/* Data Card */}
+          <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-base-content/10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+                <FiCalendar className="text-gray-600 dark:text-gray-400" size={18} />
+              </div>
+              <h4 className="font-semibold text-gray-900 dark:text-white">Data e Horário</h4>
+            </div>
+
+            <div className="space-y-4">
+              {/* Data */}
+              <div>
+                <label className="label">
+                  <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300">
+                    {isRecurring ? 'Data Inicial' : 'Data da Aula'} *
+                  </span>
+                </label>
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field }) => (
+                    <DatePicker
+                      selected={field.value}
+                      onChange={(date) => field.onChange(date)}
+                      dateFormat="dd/MM/yyyy"
+                      locale={ptBR}
+                      minDate={new Date()}
+                      className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-sm rounded-lg h-10 ${
+                        errors.date ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-base-content/20'
+                      }`}
+                      calendarClassName="bg-white dark:bg-base-200"
+                      placeholderText="Selecione a data"
+                    />
+                  )}
                 />
-              )}
-            />
-            {errors.date && (
-              <p className="text-error text-base mt-1">{errors.date.message}</p>
-            )}
+                {errors.date && (
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{errors.date.message}</p>
+                )}
+              </div>
+
+              {/* Horários - Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">
+                    <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <FiClock className="w-3.5 h-3.5" />
+                      Início *
+                    </span>
+                  </label>
+                  <Controller
+                    control={control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={field.value}
+                        onChange={(date) => field.onChange(date)}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Hora"
+                        dateFormat="HH:mm"
+                        timeFormat="HH:mm"
+                        locale={ptBR}
+                        className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-sm rounded-lg h-10 ${
+                          errors.startTime ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-base-content/20'
+                        }`}
+                        placeholderText="00:00"
+                      />
+                    )}
+                  />
+                  {errors.startTime && (
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{errors.startTime.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">
+                    <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <FiClock className="w-3.5 h-3.5" />
+                      Término *
+                    </span>
+                  </label>
+                  <Controller
+                    control={control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={field.value}
+                        onChange={(date) => field.onChange(date)}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Hora"
+                        dateFormat="HH:mm"
+                        timeFormat="HH:mm"
+                        locale={ptBR}
+                        className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-sm rounded-lg h-10 ${
+                          errors.endTime ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-base-content/20'
+                        }`}
+                        placeholderText="00:00"
+                      />
+                    )}
+                  />
+                  {errors.endTime && (
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{errors.endTime.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Dias da Semana (se recorrente) */}
+          {/* Dias da Semana - Mostrado se recorrente */}
           {isRecurring && (
-            <div>
-              <label className="label">
-                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                  Dias da Semana *
-                </span>
-              </label>
-              <div className="grid grid-cols-7 gap-2">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-base-content/10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+                  <FiCalendar className="text-gray-600 dark:text-gray-400" size={18} />
+                </div>
+                <h4 className="font-semibold text-gray-900 dark:text-white">Dias da Semana</h4>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2 mb-4">
                 {WEEKDAYS.map((day) => (
                   <button
                     key={day.value}
                     type="button"
                     onClick={() => toggleWeekday(day.value)}
                     className={`
-                      px-3 py-3 rounded-lg font-medium text-base transition-all
+                      px-2 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center
                       ${selectedWeekdays.includes(day.value)
-                        ? 'bg-primary text-white shadow-md scale-105'
+                        ? 'bg-gray-900 text-white shadow-md'
                         : 'bg-gray-100 dark:bg-base-300 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-100'
                       }
                     `}
@@ -371,155 +452,93 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
                   </button>
                 ))}
               </div>
-              {errors.recurringWeekdays && (
-                <p className="text-error text-base mt-1">{errors.recurringWeekdays.message}</p>
-              )}
-            </div>
-          )}
 
-          {/* Número de Semanas (se recorrente) */}
-          {isRecurring && (
-            <div>
-              <label className="label">
-                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                  Número de Semanas *
-                </span>
-              </label>
-              <input
-                type="number"
-                {...register('numberOfWeeks', { valueAsNumber: true })}
-                min={1}
-                max={20}
-                className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
-                placeholder="Ex: 4"
-              />
-              {errors.numberOfWeeks && (
-                <p className="text-error text-base mt-1">{errors.numberOfWeeks.message}</p>
+              {errors.recurringWeekdays && (
+                <p className="text-xs text-red-500 dark:text-red-400 font-medium">{errors.recurringWeekdays.message}</p>
               )}
-              <div className="alert alert-info mt-2">
-                <FiInfo className="w-5 h-5" />
-                <span className="text-base">
-                  Serão criadas{' '}
-                  <strong>
-                    {selectedWeekdays.length * (watch('numberOfWeeks') || 0)} aulas
-                  </strong>{' '}
-                  no total
-                </span>
+
+              {/* Número de Semanas */}
+              <div className="mt-4">
+                <label className="label">
+                  <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300">
+                    Número de Semanas *
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  {...register('numberOfWeeks', { valueAsNumber: true })}
+                  min={1}
+                  max={20}
+                  className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-sm rounded-lg h-10 ${
+                    errors.numberOfWeeks ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-base-content/20'
+                  }`}
+                  placeholder="Ex: 4"
+                />
+                {errors.numberOfWeeks && (
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{errors.numberOfWeeks.message}</p>
+                )}
+                {selectedWeekdays.length > 0 && watch('numberOfWeeks') && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-1">
+                    <FiInfo size={14} />
+                    Serão criadas <strong>{selectedWeekdays.length * (watch('numberOfWeeks') || 0)} aulas</strong>
+                  </p>
+                )}
               </div>
             </div>
           )}
 
-          {/* Horários */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">
-                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                  <FiClock className="inline w-4 h-4 mr-2" />
-                  Início *
-                </span>
-              </label>
-              <Controller
-                control={control}
-                name="startTime"
-                render={({ field }) => (
-                  <DatePicker
-                    selected={field.value}
-                    onChange={(date) => field.onChange(date)}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Hora"
-                    dateFormat="HH:mm"
-                    timeFormat="HH:mm"
-                    locale={ptBR}
-                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
-                    placeholderText="00:00"
-                  />
-                )}
-              />
-              {errors.startTime && (
-                <p className="text-error text-base mt-1">{errors.startTime.message}</p>
-              )}
+          {/* Informações Opcionais */}
+          <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-base-content/10">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Informações Adicionais</h4>
+
+            <div className="space-y-4">
+              {/* Nome */}
+              <div>
+                <label className="label">
+                  <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300">
+                    Título da Aula (opcional)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  {...register('name')}
+                  placeholder="Ex: Aula sobre Estruturas de Dados"
+                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm rounded-lg h-10 border-gray-200 dark:border-base-content/20"
+                />
+              </div>
+
+              {/* Descrição */}
+              <div>
+                <label className="label">
+                  <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300">
+                    Descrição (opcional)
+                  </span>
+                </label>
+                <textarea
+                  {...register('description')}
+                  rows={2}
+                  placeholder="Descreva o conteúdo da aula..."
+                  className="textarea textarea-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm rounded-lg border-gray-200 dark:border-base-content/20"
+                />
+              </div>
             </div>
-
-            <div>
-              <label className="label">
-                <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                  <FiClock className="inline w-4 h-4 mr-2" />
-                  Término *
-                </span>
-              </label>
-              <Controller
-                control={control}
-                name="endTime"
-                render={({ field }) => (
-                  <DatePicker
-                    selected={field.value}
-                    onChange={(date) => field.onChange(date)}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Hora"
-                    dateFormat="HH:mm"
-                    timeFormat="HH:mm"
-                    locale={ptBR}
-                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white text-base"
-                    placeholderText="00:00"
-                  />
-                )}
-              />
-              {errors.endTime && (
-                <p className="text-error text-base mt-1">{errors.endTime.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Nome (opcional) */}
-          <div>
-            <label className="label">
-              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                Título da Aula (opcional)
-              </span>
-            </label>
-            <input
-              type="text"
-              {...register('name')}
-              placeholder="Ex: Aula sobre Estruturas de Dados"
-              className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
-            />
-          </div>
-
-          {/* Descrição (opcional) */}
-          <div>
-            <label className="label">
-              <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                Descrição (opcional)
-              </span>
-            </label>
-            <textarea
-              {...register('description')}
-              rows={3}
-              placeholder="Descreva o conteúdo da aula..."
-              className="textarea textarea-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
-            />
           </div>
 
           {/* Senha de Presença */}
-          <div className="border border-gray-200 dark:border-base-content/10 rounded-lg p-4 bg-gray-50 dark:bg-base-300">
+          <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-base-content/10">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <FiLock className="w-5 h-5 text-primary" />
-                <span className="font-medium text-base text-gray-900 dark:text-white">
-                  Exigir Senha para Presença
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+                  <FiLock className="text-gray-600 dark:text-gray-400" size={18} />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">Exigir Senha</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Para registro de presença</p>
+                </div>
               </div>
               <input
                 type="checkbox"
-                className="toggle toggle-lg bg-gray-300 border-gray-400 
-                          [--tglbg:theme(colors.gray.300)] 
-                          checked:bg-primary checked:border-primary
-                          hover:bg-gray-400 dark:bg-gray-600 dark:border-gray-500
-                          dark:checked:bg-primary dark:checked:border-primary"
+                className="toggle toggle-sm"
                 checked={requirePassword}
                 onChange={(e) => {
                   const checked = e.target.checked;
@@ -532,75 +551,77 @@ export function CreateLessonModal({ isOpen, onClose, classId }: CreateLessonModa
               />
             </div>
 
-            <p className="text-base text-gray-600 dark:text-base-content/70 mb-3">
-              Ao ativar, os alunos precisarão digitar a senha para registrar presença
-            </p>
-
             {requirePassword && (
               <div>
                 <label className="label">
-                  <span className="label-text font-medium text-base text-gray-700 dark:text-gray-200">
-                    Senha (4-20 caracteres)
+                  <span className="label-text font-medium text-sm text-gray-700 dark:text-gray-300">
+                    Senha (4-20 caracteres) *
                   </span>
                 </label>
                 <input
                   type="text"
                   {...register('attendancePassword')}
                   placeholder="Ex: AULA123"
-                  className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-base"
+                  className={`input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm rounded-lg h-10 ${
+                    errors.attendancePassword ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-base-content/20'
+                  }`}
                   maxLength={20}
                 />
                 {errors.attendancePassword && (
-                  <p className="text-error text-base mt-1">
-                    {errors.attendancePassword.message}
-                  </p>
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{errors.attendancePassword.message}</p>
                 )}
-                <p className="text-sm text-gray-500 dark:text-base-content/60 mt-2">
-                  💡 Dica: Use uma senha fácil de ditar em aula (ex: códigos simples)
-                </p>
               </div>
             )}
           </div>
 
           {/* Error Message */}
           {createLessonMutation.isError && (
-            <div className="alert alert-error">
-              <span className="text-base">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <p className="text-sm text-red-800 dark:text-red-200 font-medium">
                 {createLessonMutation.error instanceof Error
                   ? createLessonMutation.error.message
                   : 'Erro ao criar aula(s)'}
-              </span>
+              </p>
             </div>
           )}
+        </form>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4 sticky bottom-0 bg-white dark:bg-base-200 pb-2">
+        {/* Footer Buttons - Sticky */}
+        <div className="border-t border-gray-100 dark:border-gray-700/50 bg-gradient-to-r from-gray-50/50 to-gray-50/30 dark:from-gray-800/30 dark:to-gray-800/20 p-6 flex-shrink-0">
+          <div className="flex gap-4 justify-center">
             <button
               type="button"
               onClick={handleClose}
-              className="btn-premium-outline flex-1 text-base"
+              className="px-8 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/30 hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 min-w-[140px]"
               disabled={createLessonMutation.isPending}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="btn-premium flex-1 text-base"
+              onClick={handleSubmit(onSubmit, onError)}
+              className="px-8 py-2.5 text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 gap-2 flex items-center justify-center min-w-[140px]"
               disabled={createLessonMutation.isPending}
             >
               {createLessonMutation.isPending ? (
                 <>
                   <span className="loading loading-spinner loading-sm" />
-                  Criando...
+                  <span className="hidden sm:inline">Criando...</span>
+                </>
+              ) : isRecurring ? (
+                <>
+                  <span className="hidden sm:inline">{`Criar ${selectedWeekdays.length * (watch('numberOfWeeks') || 0)} Aulas`}</span>
+                  <span className="sm:hidden">Criar</span>
                 </>
               ) : (
-                isRecurring
-                  ? `Criar ${selectedWeekdays.length * (watch('numberOfWeeks') || 0)} Aulas`
-                  : 'Criar Aula'
+                <>
+                  <span className="hidden sm:inline">Criar Aula</span>
+                  <span className="sm:hidden">Criar</span>
+                </>
               )}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -387,17 +387,17 @@ export function LessonDetailModal({
                 <FiCalendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gray-900 dark:text-white">
+                <h2 className="font-bold text-xl sm:text-2xl text-gray-900 dark:text-white">
                   {lessonData?.name && lessonData.name.trim() !== '' ? lessonData.name : 'Aula'}
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {formatDateBR(lessonData?.date || '')} • {lessonData?.startTime ? extractTimeFromISO(lessonData.startTime) : '--:--'} - {lessonData?.endTime ? extractTimeFromISO(lessonData.endTime) : '--:--'}
                 </p>
               </div>
             </div>
             <button 
               onClick={onClose} 
-              className="btn btn-sm btn-ghost btn-circle text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200"
+              className="btn btn-sm btn-ghost btn-circle text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200 flex-shrink-0"
             >
               <FiX className="w-5 h-5" />
             </button>
