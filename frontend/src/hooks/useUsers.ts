@@ -64,3 +64,33 @@ export const useUser = (id: number) => {
     enabled: !!id, // Só busca se ID existir
   });
 };
+
+export const useProfessorStudents = () => {
+  return useQuery<User[], Error>({
+    queryKey: ['professor-students'],
+    queryFn: async () => {
+      try {
+        // Primeiro busca as turmas do professor
+        const classesResponse = await api.get('/turmas');
+        const classes = classesResponse.data || [];
+
+        // Extrai todos os alunos únicos de todas as turmas
+        const studentsMap = new Map<number, User>();
+        
+        classes.forEach((classItem: any) => {
+          const users = classItem.users || [];
+          users.forEach((uc: any) => {
+            if (uc.role === 'STUDENT' && uc.user) {
+              studentsMap.set(uc.user.id, uc.user);
+            }
+          });
+        });
+
+        return Array.from(studentsMap.values());
+      } catch (error) {
+        console.error('Erro ao buscar alunos do professor:', error);
+        return [];
+      }
+    },
+  });
+};
