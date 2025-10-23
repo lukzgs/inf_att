@@ -40,10 +40,10 @@ export default function TurmasPage() {
           </div>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex-shrink-0 btn-premium gap-2 text-sm sm:text-base p-2 sm:p-3 rounded-lg hover:sm:scale-105 active:scale-95 transition-transform"
+            className="btn-premium gap-2"
           >
-            <FiPlus className="w-5 h-5 sm:w-6 sm:h-6" />
-            <span className="hidden sm:inline">Nova Turma</span>
+            <FiPlus size={18} />
+            Nova Turma
           </button>
         </div>
 
@@ -112,13 +112,6 @@ export default function TurmasPage() {
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 mb-4">
               Crie sua primeira turma para começar
             </p>
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="btn-premium gap-2"
-            >
-              <FiPlus size={18} />
-              Nova Turma
-            </button>
           </div>
         )}
       </div>
