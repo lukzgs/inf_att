@@ -1,12 +1,20 @@
-import { FiUsers, FiPlus, FiBook } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { FiUsers, FiBook, FiBarChart2 } from 'react-icons/fi';
 import { useProfessorClasses } from '../../hooks/useProfessorClasses';
-import { useState } from 'react';
-import { CreateClassModal } from './CreateClassModal';
+import { useProfessorStudents } from '../../hooks/useUsers';
+import { useMemo } from 'react';
 
 export default function ProfessorDashboard() {
-  const { data: classes, isLoading } = useProfessorClasses();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { data: classes, isLoading: classesLoading } = useProfessorClasses();
+  const { data: students, isLoading: studentsLoading } = useProfessorStudents();
+
+  // Calcular total de aulas
+  const totalLessons = useMemo(() => {
+    return classes?.reduce((sum, turma) => sum + (turma.lessons?.length || 0), 0) || 0;
+  }, [classes]);
+
+  const isLoading = classesLoading || studentsLoading;
+  const totalClasses = classes?.length || 0;
+  const totalStudents = students?.length || 0;
 
   return (
     <div className="animate-fade-in-up">
@@ -27,102 +35,53 @@ export default function ProfessorDashboard() {
         </div>
       </div>
 
-      {/* Minhas Turmas */}
-      <section>
-        <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-0">
-              Minhas Turmas
-            </h2>
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex-shrink-0 btn-premium gap-2 text-sm sm:text-base p-2 sm:p-3 rounded-lg hover:sm:scale-105 active:scale-95 transition-transform"
-            >
-              <FiPlus className="w-5 h-5 sm:w-6 sm:h-6" />
-              <span className="hidden sm:inline">Nova Turma</span>
-            </button>
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="skeleton-premium h-48 w-full" />
-              ))}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-12">
+        {/* Total de Turmas */}
+        <div className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 ring-2 ring-primary/20 flex items-center justify-center flex-shrink-0">
+              <FiBook className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
             </div>
-          ) : classes && classes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {classes.map((turma) => (
-                <Link
-                  key={turma.id}
-                  to={`/professor/turmas/${turma.id}`}
-                  className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6"
-                >
-                  {/* Card Header */}
-                  <div className="mb-3 sm:mb-4">
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-primary transition-colors">
-                      {turma.subject?.code} - Turma {turma.code}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 line-clamp-2 mb-1">
-                      {turma.subject?.name}
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70">
-                      {turma.year}/{turma.semester}
-                    </p>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-base-content/10">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FiUsers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-base-content/70">Alunos</p>
-                        <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                          {turma.totalStudents}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 justify-end">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                        <FiBook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-base-content/70">Créditos</p>
-                        <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                          {turma.subject?.credits || 0}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state py-12">
-              <div className="text-6xl mb-4">📚</div>
-              <h3 className="empty-state-title">Nenhuma turma encontrada</h3>
-              <p className="empty-state-description">
-                Você ainda não está lecionando nenhuma turma. Clique em "Nova Turma" para começar!
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 font-medium">Total de Turmas</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : totalClasses}
               </p>
-              <button 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="btn-premium mt-4 gap-2"
-              >
-                <FiPlus className="w-5 h-5" />
-                Criar Primeira Turma
-              </button>
             </div>
-          )}
+          </div>
         </div>
-      </section>
 
-      {/* Create Class Modal */}
-      <CreateClassModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
+        {/* Total de Alunos */}
+        <div className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-blue-100 dark:bg-blue-500/10 ring-2 ring-blue-200 dark:ring-blue-500/30 flex items-center justify-center flex-shrink-0">
+              <FiUsers className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 font-medium">Total de Alunos</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : totalStudents}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total de Aulas */}
+        <div className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-orange-100 dark:bg-orange-500/10 ring-2 ring-orange-200 dark:ring-orange-500/30 flex items-center justify-center flex-shrink-0">
+              <FiBarChart2 className="w-6 h-6 sm:w-7 sm:h-7 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 font-medium">Total de Aulas</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : totalLessons}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
