@@ -16,11 +16,16 @@ export const AuthHandler = () => {
       return;
     }
 
-    // If we have a user, it means login was successful, redirect to dashboard
+    // If we have a user, it means login was successful, redirect appropriately
     if (user) {
         // Check if we are on the login page and redirect away
         if (window.location.pathname === '/login') {
-            navigate('/dashboard');
+            // Redirect professors to aulas page, others to dashboard
+            if (user.roles.includes('PROFESSOR')) {
+              navigate('/professor/aulas');
+            } else {
+              navigate('/dashboard');
+            }
         }
     } else {
         // If there's no user and we are not on the login page, redirect to login

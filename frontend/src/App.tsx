@@ -55,7 +55,7 @@ const PresencaFormPage = lazy(() => import('./pages/admin/presencas/PresencaForm
  * Handles the root path, redirecting based on auth state or showing a loading indicator.
  */
 function RootRedirect() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -66,6 +66,10 @@ function RootRedirect() {
   }
 
   // Navigate to the appropriate page once loading is complete
+  if (isAuthenticated && user?.roles.includes('PROFESSOR')) {
+    return <Navigate to="/professor/aulas" replace />;
+  }
+  
   return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
 }
 
