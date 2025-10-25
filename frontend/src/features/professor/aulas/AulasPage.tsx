@@ -59,8 +59,11 @@ export default function ProfessorAulasPage() {
   const professorLessons = useMemo(() => {
     if (!allLessons || !classes) return [];
     
+    // Garantir que allLessons é um array
+    const lessonsArray = Array.isArray(allLessons) ? allLessons : [];
+    
     const classIds = new Set(classes.map(c => c.id));
-    let filtered = allLessons.filter(lesson => classIds.has(lesson.classId));
+    let filtered = lessonsArray.filter(lesson => classIds.has(lesson.classId));
     
     // Filtrar por status (agendadas/realizadas) usando função utilitária
     filtered = filterLessonsByStatus(filtered, filterStatus);
