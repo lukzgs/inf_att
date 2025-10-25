@@ -2,7 +2,8 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 // The backend URL will be read from environment variables
-// For local development, we'll use a default
+// For Docker development, use http://localhost:3000
+// For production, use the production API URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const api = axios.create({
