@@ -40,10 +40,10 @@ export default function TurmasPage() {
           </div>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="btn-premium gap-2"
+            className="btn-premium gap-2 h-8 min-h-8 w-8 sm:w-auto px-0 sm:px-3 text-sm justify-center"
           >
-            <FiPlus size={18} />
-            Nova Turma
+            <FiPlus size={14} />
+            <span className="hidden sm:inline">Nova Turma</span>
           </button>
         </div>
 
