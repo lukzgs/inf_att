@@ -70,8 +70,8 @@ export const useProfessorStudents = () => {
     queryKey: ['professor-students'],
     queryFn: async () => {
       try {
-        // Primeiro busca as turmas do professor
-        const classesResponse = await api.get('/turmas');
+        // Busca as turmas do professor com usuários incluídos
+        const classesResponse = await api.get('/turmas/professor/minhas-turmas');
         const classes = classesResponse.data || [];
 
         // Extrai todos os alunos únicos de todas as turmas
