@@ -35,6 +35,7 @@ interface Student {
   name: string;
   email: string;
   isPresent?: boolean;
+  hasRecord?: boolean;
 }
 
 interface LessonDetailModalProps {
@@ -883,12 +884,14 @@ export function LessonDetailModal({
                             className={`px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all flex-shrink-0 ${
                               student.isPresent 
                                 ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/30' 
+                                : student.hasRecord
+                                ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/30'
                                 : 'bg-gray-100 dark:bg-base-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-base-300'
                             }`}
                             disabled={isLoading}
-                            title={student.isPresent ? 'Marcar como ausente' : 'Marcar como presente'}
+                            title={student.isPresent ? 'Marcar como ausente' : student.hasRecord ? 'Marcar como presente' : 'Marcar como presente'}
                           >
-                            {student.isPresent ? 'Presente' : 'Marcar'}
+                            {student.isPresent ? 'Presente' : student.hasRecord ? 'Ausente' : 'Marcar'}
                           </button>
                         </div>
                       </div>
