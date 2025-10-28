@@ -11,6 +11,7 @@ import './App.css';
 
 // Core pages (always loaded - small and essential)
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import DashboardPage from './pages/DashboardPage'; // ✅ Dashboard carregado imediatamente
 
@@ -94,6 +95,7 @@ function App() {
         />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           
           {/* Protected Routes */}
           <Route 
