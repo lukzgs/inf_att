@@ -28,9 +28,9 @@ export const AuthHandler = () => {
             }
         }
     } else {
-        // If there's no user and we are not on the login page, redirect to login
+        // If there's no user and we are not on the login or register page, redirect to login
         // This handles logout and expired tokens
-        if (window.location.pathname !== '/login') {
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
             navigate('/login');
         }
     }
