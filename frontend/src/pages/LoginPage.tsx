@@ -6,28 +6,30 @@ import { FiCalendar, FiUsers, FiCheckCircle, FiLock, FiMail, FiChevronRight, FiC
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Define the shape of the login response
 interface LoginResponse {
   access_token: string;
 }
 
-// Define the form schema using Zod
+// Define the login form schema using Zod
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Email inválido' }),
-  password: z.string().min(1, { message: 'A senha é obrigatória' }),
+  email: z.string().email({ message: 'Email inválido' }),
+  password: z.string().min(1, { message: 'A senha é obrigatória' }),
 });
 
 // Infer the type from the schema
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState<0 | 1>(0);
   
   const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
+    register: loginRegister,
+    handleSubmit: handleLoginSubmit,
+    formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
   } = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
   });
@@ -149,7 +151,7 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <form onSubmit={handleLoginSubmit(onSubmit)} className="space-y-4">
                     {/* Email Field */}
                     <div className="form-control">
                       <label htmlFor="email" className="label pb-2">
@@ -164,20 +166,20 @@ export default function LoginPage() {
                         placeholder="seu.email@inf.ufrgs.br"
                         autoComplete="email"
                         className={`input input-bordered w-full bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-white focus:ring-2 focus:ring-white/20 transition-all h-12 ${
-                          errors.email 
+                          loginErrors.email 
                             ? 'border-red-300 focus:border-red-300 focus:ring-red-300/20' 
                             : ''
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        disabled={isSubmitting}
-                        {...register('email')}
+                        disabled={isLoginSubmitting}
+                        {...loginRegister('email')}
                       />
                       <div className="h-7 mt-2">
-                        {errors.email && (
+                        {loginErrors.email && (
                           <p className="text-sm text-red-200 flex items-center gap-1.5 font-medium">
                             <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
-                            {errors.email.message}
+                            {loginErrors.email.message}
                           </p>
                         )}
                       </div>
@@ -197,20 +199,20 @@ export default function LoginPage() {
                         placeholder="••••••••"
                         autoComplete="current-password"
                         className={`input input-bordered w-full bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-white focus:ring-2 focus:ring-white/20 transition-all h-12 ${
-                          errors.password 
+                          loginErrors.password 
                             ? 'border-red-300 focus:border-red-300 focus:ring-red-300/20' 
                             : ''
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        disabled={isSubmitting}
-                        {...register('password')}
+                        disabled={isLoginSubmitting}
+                        {...loginRegister('password')}
                       />
                       <div className="h-7 mt-2">
-                        {errors.password && (
+                        {loginErrors.password && (
                           <p className="text-sm text-red-200 flex items-center gap-1.5 font-medium">
                             <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
-                            {errors.password.message}
+                            {loginErrors.password.message}
                           </p>
                         )}
                       </div>
@@ -219,10 +221,10 @@ export default function LoginPage() {
                     {/* Submit Button */}
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isLoginSubmitting}
                       className="btn w-full h-12 font-semibold text-base bg-white hover:bg-white/90 text-primary border-0 shadow-sm hover:shadow transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-8 rounded-xl"
                     >
-                      {isSubmitting ? (
+                      {isLoginSubmitting ? (
                         <span className="flex items-center justify-center gap-2">
                           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -238,7 +240,7 @@ export default function LoginPage() {
                     {/* Register Button */}
                     <button
                       type="button"
-                      onClick={() => {/* TODO: Implementar navegação para registro */}}
+                      onClick={() => navigate('/register')}
                       className="btn btn-outline w-full h-12 font-semibold text-base text-white border-white/30 hover:bg-white/10 hover:border-white transition-all mt-3 rounded-xl"
                     >
                       Registrar
