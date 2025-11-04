@@ -30,6 +30,7 @@ const CoursePage = lazy(() => import('./pages/CoursePage'));
 
 // Student pages
 const SubjectDetailPage = lazy(() => import('./features/student/subjects/SubjectDetailPage'));
+const AlunoDetailPage = lazy(() => import('./pages/professor/alunos/AlunoDetailPage'));
 
 // Admin - Usuários
 const UsuariosListPage = lazy(() => import('./pages/admin/usuarios/UsuariosListPage'));
@@ -77,8 +78,8 @@ function RootRedirect() {
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
-        <AuthProvider>
+      <AuthProvider>
+        <Router>
           <AuthHandler />
           <Toaster 
           position="bottom-center" 
@@ -144,6 +145,11 @@ function App() {
             <Route path="professor/turmas/:id" element={<ClassDetailPage />} />
             <Route path="professor/aulas" element={<ProfessorAulasPage />} />
             <Route path="professor/alunos" element={<ProfessorAlunosPage />} />
+            <Route path="professor/alunos/:id" element={
+              <Suspense fallback={<LoadingPage />}>
+                <AlunoDetailPage />
+              </Suspense>
+            } />
             
             {/* Admin Routes - Usuários */}
             <Route path="admin/usuarios" element={
@@ -242,8 +248,8 @@ function App() {
           {/* 404 - Not Found */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </Router>
       </AuthProvider>
-    </Router>
     </ErrorBoundary>
   );
 }
