@@ -50,6 +50,11 @@ const fetchUserById = async (id: number): Promise<User> => {
   return response.data;
 };
 
+const fetchProfessorStudentById = async (id: number): Promise<User> => {
+  const response = await api.get<User>(`/usuarios/professor/student/${id}`);
+  return response.data;
+};
+
 export const useUsers = () => {
   return useQuery<User[], Error>({
     queryKey: ['users'],
@@ -94,3 +99,41 @@ export const useProfessorStudents = () => {
     },
   });
 };
+
+export const useProfessorStudent = (id: number) => {
+  return useQuery<User, Error>({
+    queryKey: ['professor-student', id],
+    queryFn: () => fetchProfessorStudentById(id),
+    enabled: !!id,
+  });
+};
+
+export interface AttendanceRecord {
+  lessonId: number;
+  userId: number;
+  isPresent: boolean;
+  justification?: string;
+  lesson: {
+    id: number;
+    date: string;
+    name: string;
+    class: {
+      id: number;
+      code: string;
+    };
+  };
+}
+
+const fetchStudentAttendance = async (studentId: number): Promise<AttendanceRecord[]> => {
+  const response = await api.get<AttendanceRecord[]>(`/presencas?userId=${studentId}`);
+  return response.data;
+};
+
+export const useProfessorStudentAttendance = (studentId: number) => {
+  return useQuery<AttendanceRecord[], Error>({
+    queryKey: ['professor-student-attendance', studentId],
+    queryFn: () => fetchStudentAttendance(studentId),
+    enabled: !!studentId,
+  });
+};
+
