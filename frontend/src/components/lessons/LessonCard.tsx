@@ -174,11 +174,6 @@ export function LessonCard({
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-primary transition-colors">
             {lesson.name}
           </h3>
-          {lesson.description && (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-base-content/70 line-clamp-2 mb-1">
-              {lesson.description}
-            </p>
-          )}
           {lesson.class && (
             <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
               <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">
