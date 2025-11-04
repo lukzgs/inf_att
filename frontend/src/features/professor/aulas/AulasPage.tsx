@@ -254,7 +254,7 @@ export default function ProfessorAulasPage() {
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
-      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-12">
+      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
             <FiClipboard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
@@ -271,7 +271,7 @@ export default function ProfessorAulasPage() {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6">
+      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-8">
         {/* Campo de Busca */}
         <div className="relative mb-4">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -329,7 +329,7 @@ export default function ProfessorAulasPage() {
       </div>
 
       {/* Aulas Section */}
-      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
+      <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-8">
         {/* Header com seleção múltipla */}
         <BulkSelectHeader
           totalLessons={professorLessons.length}
