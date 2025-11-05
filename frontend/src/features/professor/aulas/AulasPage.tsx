@@ -369,6 +369,7 @@ export default function ProfessorAulasPage() {
                   onToggleSelect={multiSelect.toggleItem}
                   showSelectCheckbox={showSelectMode}
                   allLessons={professorLessons}
+                  showSubjectInfo={true}
                 />
               );
             })}

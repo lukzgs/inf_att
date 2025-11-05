@@ -192,6 +192,7 @@ export default function AulasListPage() {
                   refetch();
                 }
               }}
+              showSubjectInfo={true}
             />
           ))}
             </div>

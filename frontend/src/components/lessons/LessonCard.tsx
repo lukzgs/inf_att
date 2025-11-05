@@ -1,4 +1,4 @@
-import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar, FiCheckCircle, FiX } from 'react-icons/fi';
+import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar, FiCheckCircle, FiX, FiCheck } from 'react-icons/fi';
 import { useState } from 'react';
 import { formatDateShort } from '@/utils/format';
 import { formatAulaTitle } from '@/utils/lessons/getAulaNumber';
@@ -33,6 +33,11 @@ interface LessonCardProps {
   showSelectCheckbox?: boolean;
   // Para cálculo de número de aula dinâmico
   allLessons?: Array<{ id: number; date: string }>;
+  // Props para alunos marcarem presença
+  isStudent?: boolean;
+  onMarkAttendance?: (lessonId: number) => void;
+  // Controlar se deve mostrar a descrição de disciplina/turma
+  showSubjectInfo?: boolean;
 }
 
 export function LessonCard({
@@ -47,6 +52,9 @@ export function LessonCard({
   onToggleSelect,
   showSelectCheckbox = false,
   allLessons,
+  isStudent = false,
+  onMarkAttendance,
+  showSubjectInfo = false,
 }: LessonCardProps) {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -178,7 +186,7 @@ export function LessonCard({
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-primary transition-colors">
             {formatAulaTitle(lesson, allLessons)}
           </h3>
-          {lesson.class && (
+          {lesson.class && showSubjectInfo && (
             <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
               <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">
                 {(lesson.class.subject as any)?.code || 'DISC'}
@@ -296,6 +304,20 @@ export function LessonCard({
           </div>
         </div>
       </div>
+
+      {/* Botão Marcar Presença (apenas para alunos) */}
+      {isStudent && onMarkAttendance && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMarkAttendance(lesson.id);
+          }}
+          className="w-full mt-4 px-4 py-2.5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <FiCheck className="w-4 h-4" />
+          Marcar Presença
+        </button>
+      )}
     </div>
   );
 }
