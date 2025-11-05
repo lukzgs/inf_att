@@ -28,8 +28,10 @@ const CoursesListPage = lazy(() => import('./pages/CoursesListPage'));
 const CourseFormPage = lazy(() => import('./pages/CourseFormPage'));
 const CoursePage = lazy(() => import('./pages/CoursePage'));
 
-// Student pages
-const SubjectDetailPage = lazy(() => import('./features/student/subjects/SubjectDetailPage'));
+// Usuário (Student) pages
+const SubjectDetailPage = lazy(() => import('./features/usuarios/subjects/SubjectDetailPage'));
+const UsuarioTurmasPage = lazy(() => import('./features/usuarios/turmas/TurmasPage'));
+const UsuarioAulasPage = lazy(() => import('./features/usuarios/aulas/AulasPage'));
 const AlunoDetailPage = lazy(() => import('./pages/professor/alunos/AlunoDetailPage'));
 
 // Admin - Usuários
@@ -133,10 +135,20 @@ function App() {
               </Suspense>
             } />
             
-            {/* Student Routes */}
-            <Route path="student/subjects/:id" element={
+            {/* Usuário (Student) Routes */}
+            <Route path="usuario/presencas/:id" element={
               <Suspense fallback={<LoadingPage />}>
                 <SubjectDetailPage />
+              </Suspense>
+            } />
+            <Route path="usuario/turmas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <UsuarioTurmasPage />
+              </Suspense>
+            } />
+            <Route path="usuario/aulas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <UsuarioAulasPage />
               </Suspense>
             } />
             

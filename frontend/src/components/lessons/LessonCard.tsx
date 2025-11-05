@@ -1,6 +1,7 @@
 import { FiClock, FiEdit2, FiTrash2, FiLock, FiUnlock, FiMoreVertical, FiCalendar, FiCheckCircle, FiX } from 'react-icons/fi';
 import { useState } from 'react';
 import { formatDateShort } from '@/utils/format';
+import { formatAulaTitle } from '@/utils/lessons/getAulaNumber';
 
 interface LessonCardProps {
   lesson: {
@@ -30,6 +31,8 @@ interface LessonCardProps {
   isSelected?: boolean;
   onToggleSelect?: (lessonId: number) => void;
   showSelectCheckbox?: boolean;
+  // Para cálculo de número de aula dinâmico
+  allLessons?: Array<{ id: number; date: string }>;
 }
 
 export function LessonCard({
@@ -43,6 +46,7 @@ export function LessonCard({
   isSelected = false,
   onToggleSelect,
   showSelectCheckbox = false,
+  allLessons,
 }: LessonCardProps) {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -172,7 +176,7 @@ export function LessonCard({
         
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-primary transition-colors">
-            {lesson.name}
+            {formatAulaTitle(lesson, allLessons)}
           </h3>
           {lesson.class && (
             <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
@@ -181,9 +185,6 @@ export function LessonCard({
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                 {lesson.class.subject?.name}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Turma: {lesson.class.code}
               </p>
             </div>
           )}

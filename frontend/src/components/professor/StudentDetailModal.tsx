@@ -1,5 +1,7 @@
 import { FiX, FiUser, FiCheck } from 'react-icons/fi';
 import { useState } from 'react';
+import { api } from '@/services/api';
+import { toast } from 'sonner';
 
 interface StudentDetailModalProps {
   isOpen: boolean;
@@ -46,32 +48,67 @@ export function StudentDetailModal({
   onAttendanceUpdate,
 }: StudentDetailModalProps) {
   const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'present' | 'absent'>('all');
+  const [localAttendanceChanges, setLocalAttendanceChanges] = useState<Map<string, boolean>>(new Map());
+
+  // Calcular stats dinâmicos baseados em mudanças locais
+  const calculateDynamicStats = () => {
+    let totalPresent = attendances;
+    let totalAbsent = absences;
+
+    // Aplicar mudanças locais aos stats
+    localAttendanceChanges.forEach((newStatus, key) => {
+      const record = attendanceData?.find(r => `${r.lessonId}-${r.userId}` === key);
+      if (record) {
+        // Se estava presente e agora está ausente
+        if (record.present && !newStatus) {
+          totalPresent--;
+          totalAbsent++;
+        }
+        // Se estava ausente e agora está presente
+        else if (!record.present && newStatus) {
+          totalPresent++;
+          totalAbsent--;
+        }
+      }
+    });
+
+    return {
+      totalPresent,
+      totalAbsent,
+      frequency: totalLessons > 0 ? Math.round((totalPresent / totalLessons) * 100) : 0,
+    };
+  };
+
+  const dynamicStats = calculateDynamicStats();
 
   const handleToggleAttendance = async (lessonId: number, currentStatus: boolean, userId?: number) => {
     try {
-      const token = localStorage.getItem('authToken');
-      
       if (!userId) {
-        console.error('userId não disponível');
+        toast.error('Erro: ID do aluno não disponível');
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/presencas/${lessonId}/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isPresent: !currentStatus,
-        }),
+      const key = `${lessonId}-${userId}`;
+      const newStatus = !currentStatus;
+
+      // Update local state immediately for visual feedback
+      setLocalAttendanceChanges(prev => new Map(prev).set(key, newStatus));
+
+      await api.patch(`/presencas/${lessonId}/${userId}`, {
+        isPresent: newStatus,
       });
 
-      if (!response.ok) throw new Error('Erro ao atualizar presença');
-
+      toast.success(currentStatus ? 'Alterado para Ausente' : 'Alterado para Presente');
       onAttendanceUpdate?.();
     } catch (error) {
       console.error('Erro ao atualizar presença:', error);
+      toast.error('Erro ao atualizar presença');
+      // Revert local change on error
+      setLocalAttendanceChanges(prev => {
+        const updated = new Map(prev);
+        updated.delete(`${lessonId}-${userId}`);
+        return updated;
+      });
     }
   };
 
@@ -154,7 +191,7 @@ export function StudentDetailModal({
                     <FiCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mb-2" />
                     <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Presentes</span>
                     <div className="text-2xl sm:text-3xl font-heading font-bold text-emerald-600 dark:text-emerald-400">
-                      {attendances}
+                      {dynamicStats.totalPresent}
                     </div>
                   </button>
 
@@ -170,7 +207,7 @@ export function StudentDetailModal({
                     <FiX className="w-4 h-4 text-red-600 dark:text-red-400 mb-2" />
                     <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Ausentes</span>
                     <div className="text-2xl sm:text-3xl font-heading font-bold text-red-600 dark:text-red-400">
-                      {absences}
+                      {dynamicStats.totalAbsent}
                     </div>
                   </button>
 
@@ -179,7 +216,7 @@ export function StudentDetailModal({
                     <div className="w-4 h-4 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-2 text-xs font-bold">%</div>
                     <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Frequência</span>
                     <div className="text-2xl sm:text-3xl font-heading font-bold text-amber-600 dark:text-amber-400">
-                      {totalLessons > 0 ? Math.round((attendances / totalLessons) * 100) : 0}%
+                      {dynamicStats.frequency}%
                     </div>
                   </div>
                 </div>
@@ -196,7 +233,14 @@ export function StudentDetailModal({
                         if (attendanceFilter === 'absent') return !record.present;
                         return true; // 'all'
                       })
-                      .map((record, index) => (
+                      .map((record, index) => {
+                        const key = `${record.lessonId}-${record.userId}`;
+                        const hasLocalChange = localAttendanceChanges.has(key);
+                        const displayPresent = hasLocalChange 
+                          ? localAttendanceChanges.get(key) 
+                          : record.present;
+
+                        return (
                         <div
                           key={index}
                           className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-base-200 hover:bg-gray-100 dark:hover:bg-base-300 transition-colors"
@@ -216,10 +260,10 @@ export function StudentDetailModal({
                           </div>
                           <div className="ml-3 flex-shrink-0">
                             <button
-                              onClick={() => record.lessonId && handleToggleAttendance(record.lessonId, record.present, record.userId)}
+                              onClick={() => record.lessonId && displayPresent !== undefined && handleToggleAttendance(record.lessonId, displayPresent, record.userId)}
                               className="inline-flex items-center gap-2 px-3 py-1 rounded-full transition-all hover:shadow-md active:scale-95"
                             >
-                              {record.present ? (
+                              {displayPresent ? (
                                 <div className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 inline-flex items-center gap-2 px-3 py-1 rounded-full">
                                   <FiCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                   <span className="text-xs font-semibold">
@@ -237,7 +281,8 @@ export function StudentDetailModal({
                             </button>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     {attendanceData.filter((record) => {
                       if (attendanceFilter === 'present') return record.present;
                       if (attendanceFilter === 'absent') return !record.present;

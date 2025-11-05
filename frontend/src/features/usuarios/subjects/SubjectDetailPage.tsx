@@ -40,7 +40,7 @@ const extractTimeFromISO = (isoTime: string): string => {
  * - Filtro: Todas / Apenas Faltas
  * - Ordenação por data (mais recente primeiro)
  * 
- * Route: /student/subjects/:id
+ * Route: /usuario/subjects/:id
  */
 export default function SubjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -98,7 +98,7 @@ export default function SubjectDetailPage() {
           <FiAlertCircle className="w-5 h-5" />
           <span>Disciplina não encontrada</span>
         </div>
-        <Link to="/student/dashboard" className="btn btn-ghost mt-4">
+        <Link to="/usuario/turmas" className="btn btn-ghost mt-4">
           <FiArrowLeft className="w-4 h-4" />
           Voltar ao Dashboard
         </Link>
@@ -150,7 +150,7 @@ export default function SubjectDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <Link 
-          to="/student/dashboard" 
+          to="/usuario/turmas" 
           className="btn btn-ghost btn-sm mb-4"
         >
           <FiArrowLeft className="w-4 h-4" />

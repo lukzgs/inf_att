@@ -217,6 +217,31 @@ export default function MainLayout() {
                   />
                 </>
               )}
+
+              {/* Usuário (Student) Section */}
+              {user?.roles?.includes('USER') && (
+                <>
+                  {!isCollapsed && (
+                    <li className="hidden lg:block px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-4">
+                      Aprendizado
+                    </li>
+                  )}
+                  <NavItem 
+                    to="/usuario/turmas" 
+                    icon={<FiUsers size={20} />} 
+                    label="Turmas"
+                    onClick={closeSidebar}
+                    collapsed={isCollapsed}
+                  />
+                  <NavItem 
+                    to="/usuario/aulas" 
+                    icon={<FiClipboard size={20} />} 
+                    label="Aulas"
+                    onClick={closeSidebar}
+                    collapsed={isCollapsed}
+                  />
+                </>
+              )}
             </ul>
           </nav>
 

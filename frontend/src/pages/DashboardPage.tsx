@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 // Lazy load dashboards específicos por role
 const AdminDashboard = lazy(() => import('../components/dashboard/AdminDashboard'));
 const ProfessorDashboard = lazy(() => import('../components/dashboard/ProfessorDashboard'));
-const StudentDashboard = lazy(() => import('../features/student/dashboard/StudentDashboard'));
+const StudentDashboard = lazy(() => import('../features/usuarios/dashboard/StudentDashboard'));
 
 export default function DashboardPage() {
   const { user } = useAuth();

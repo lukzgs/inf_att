@@ -14,7 +14,7 @@ import { LessonCard } from '@/components/lessons/LessonCard';
 import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { ClassInfoPanel } from '@/components/professor/ClassInfoPanel';
-import { filterLessonsByStatus, getLessonNumber } from '@/utils/lessonStatus';
+import { filterLessonsByStatus } from '@/utils/lessonStatus';
 
 type FilterType = 'all' | 'completed' | 'scheduled';
 
@@ -290,12 +290,6 @@ export default function ClassDetailPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
                 {sortedLessons.map((lesson) => {
-                  // Calcular número permanente baseado na ordem cronológica de todas as aulas
-                  const lessonNumber = getLessonNumber(lesson, lessonsData || []);
-                  
-                  // Usar nome original se existir e não for vazio, senão usar número calculado
-                  const displayName = (lesson.name && lesson.name.trim()) ? lesson.name : `Aula ${lessonNumber}`;
-                  
                   const handleLessonClick = () => {
                     setLessonDetailModalData({
                       lessonId: lesson.id,
@@ -307,7 +301,7 @@ export default function ClassDetailPage() {
                     setDeleteConfirmation({
                       isOpen: true,
                       lessonId: lesson.id,
-                      lessonName: displayName,
+                      lessonName: lesson.name || `Aula ${lesson.id}`,
                       isLoading: false,
                     });
                   };
@@ -315,10 +309,11 @@ export default function ClassDetailPage() {
                   return (
                     <LessonCard
                       key={lesson.id}
-                      lesson={{ ...lesson, name: displayName } as any}
+                      lesson={lesson}
                       onView={handleLessonClick}
                       onEdit={handleLessonClick}
                       onDelete={handleDeleteLesson}
+                      allLessons={lessonsData}
                     />
                   );
                 })}
