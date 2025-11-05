@@ -7,6 +7,7 @@ import { useFrequency } from '@/hooks/useFrequency';
 import { ListPageSkeleton } from '@/components/common/Skeleton';
 import { ErrorState } from '@/components/common/EmptyState';
 import { StudentInfoPanel } from '@/components/professor/StudentInfoPanel';
+import { formatAulaTitle } from '@/utils/lessons/getAulaNumber';
 import { toast } from 'sonner';
 
 interface StudentData {
@@ -48,6 +49,7 @@ export default function AlunoDetailPage() {
 
   const [student, setStudent] = useState<StudentData | undefined>(state?.student);
   const [attendances, setAttendances] = useState<AttendanceRecord[]>([]);
+  const [allLessons, setAllLessons] = useState<Array<{ id: number; date: string }>>([]);
   const [isLoading, setIsLoading] = useState(!student);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -91,6 +93,21 @@ export default function AlunoDetailPage() {
       fetchAttendances();
     }
   }, [studentId]);
+
+  // Buscar todas as aulas para calcular numeração dinâmica
+  useEffect(() => {
+    const fetchAllLessons = async () => {
+      try {
+        const response = await api.get('/aulas?skip=0&take=1000');
+        setAllLessons(response.data || []);
+      } catch (err) {
+        console.error('Erro ao buscar aulas:', err);
+        setAllLessons([]);
+      }
+    };
+
+    fetchAllLessons();
+  }, []);
 
   // Calcular estatísticas
   const total = attendances.length;
@@ -147,13 +164,13 @@ export default function AlunoDetailPage() {
       new Date(a.lesson.date).getTime() - new Date(b.lesson.date).getTime()
     );
 
-    return sorted.map((attendance, index) => ({
+    return sorted.map((attendance) => ({
       date: new Date(attendance.lesson.date).toLocaleDateString('pt-BR'),
       present: attendance.isPresent ? 1 : 0,
       isPresent: attendance.isPresent,
-      lesson: attendance.lesson.name || `Aula ${index + 1}`,
+      lesson: formatAulaTitle(attendance.lesson, allLessons),
     }));
-  }, [attendances]);
+  }, [attendances, allLessons]);
 
   // Preparar dados para gráfico de barras (frequência por turma)
   const chartDataByClass = useMemo(() => {
@@ -301,7 +318,7 @@ export default function AlunoDetailPage() {
                         {attendance.lesson.class.subject.code} ({attendance.lesson.class.code})
                       </td>
                       <td className="py-3 px-4 text-gray-700 dark:text-gray-300">
-                        {attendance.lesson.name || 'Aula'}
+                        {formatAulaTitle(attendance.lesson, allLessons)}
                       </td>
                       <td className="py-3 px-4">
                         {attendance.isPresent ? (

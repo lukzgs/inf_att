@@ -5,6 +5,8 @@ import { useProfessorClasses } from '@/hooks/useProfessorClasses';
 import { ListPageSkeleton } from '@/components/common/Skeleton';
 import { EmptyListState, ErrorState } from '@/components/common/EmptyState';
 import { StudentDetailModal } from '@/components/professor/StudentDetailModal';
+import { formatAulaTitle } from '@/utils/lessons/getAulaNumber';
+import { api } from '@/services/api';
 
 export default function AlunosListPage() {
   const { data: students, isLoading, isError, error, refetch } = useProfessorStudents();
@@ -14,11 +16,27 @@ export default function AlunosListPage() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [studentStats, setStudentStats] = useState<any>(null);
+  const [allLessons, setAllLessons] = useState<Array<{ id: number; date: string }>>([]);
 
   // Hook para buscar presença do aluno selecionado
   const { data: attendanceData } = useProfessorStudentAttendance(
     selectedStudent?.id || 0
   );
+
+  // Buscar todas as aulas para cálculo de numeração dinâmica
+  useEffect(() => {
+    const fetchAllLessons = async () => {
+      try {
+        const response = await api.get('/aulas?skip=0&take=1000');
+        setAllLessons(response.data || []);
+      } catch (err) {
+        console.error('Erro ao buscar aulas:', err);
+        setAllLessons([]);
+      }
+    };
+
+    fetchAllLessons();
+  }, []);
 
   // Calcular estatísticas quando dados de presença chegam
   useEffect(() => {
@@ -270,7 +288,7 @@ export default function AlunosListPage() {
           attendanceData={attendanceData?.map((record) => ({
             date: record.lesson.date,
             present: record.isPresent,
-            lesson: record.lesson.name,
+            lesson: formatAulaTitle(record.lesson, allLessons),
             lessonId: record.lessonId,
             userId: record.userId,
           })) || []}
