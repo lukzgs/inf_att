@@ -79,7 +79,7 @@ export default function StudentTurmasPage() {
             {classes.map((turma) => (
               <Link
                 key={turma.id}
-                to={`/usuario/subjects/${turma.id}`}
+                to={`/usuario/presencas/${turma.id}`}
                 className="card-premium group hover:scale-102 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md p-4 sm:p-6"
               >
                 {/* Card Header */}

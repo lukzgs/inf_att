@@ -40,7 +40,7 @@ const extractTimeFromISO = (isoTime: string): string => {
  * - Filtro: Todas / Apenas Faltas
  * - Ordenação por data (mais recente primeiro)
  * 
- * Route: /usuario/subjects/:id
+ * Route: /usuario/presencas/:id
  */
 export default function SubjectDetailPage() {
   const { id } = useParams<{ id: string }>();

@@ -2,8 +2,10 @@ import { FiClipboard, FiSearch, FiX } from 'react-icons/fi';
 import { useStudentClasses } from '@/hooks/useStudentClasses';
 import { useLessons } from '@/hooks/useLessons';
 import { useState, useMemo, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { LessonCard } from '@/components/lessons/LessonCard';
 import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
+import { LessonAttendanceModal } from './LessonAttendanceModal';
 import { filterLessonsByStatus } from '@/utils/lessonStatus';
 
 /**
@@ -22,12 +24,15 @@ import { filterLessonsByStatus } from '@/utils/lessonStatus';
  * Route: /usuario/aulas
  */
 export default function StudentAulasPage() {
+  const { user } = useAuth();
   const { data: classes, isLoading: isLoadingClasses } = useStudentClasses();
   const { data: allLessons, isLoading: isLoadingLessons } = useLessons();
   const [filterStatus, setFilterStatus] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
   // Debounce para a busca - espera 500ms após parar de digitar
   useEffect(() => {
@@ -221,13 +226,18 @@ export default function StudentAulasPage() {
         ) : studentLessons.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {studentLessons.map((lesson) => (
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                onView={undefined}
-                onEdit={undefined}
-                onDelete={undefined}
-              />
+              <div key={lesson.id} className="relative">
+                <LessonCard
+                  lesson={lesson}
+                  onView={() => {
+                    setSelectedLesson(lesson);
+                    setIsAttendanceModalOpen(true);
+                  }}
+                  onEdit={undefined}
+                  onDelete={undefined}
+                  allLessons={studentLessons}
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -242,6 +252,23 @@ export default function StudentAulasPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de Presença */}
+      {selectedLesson && (
+        <LessonAttendanceModal
+          isOpen={isAttendanceModalOpen}
+          onClose={() => {
+            setIsAttendanceModalOpen(false);
+            setSelectedLesson(null);
+          }}
+          lesson={selectedLesson}
+          classId={selectedLesson.classId}
+          userId={user?.id}
+          onSuccess={() => {
+            // Recarregar dados se necessário
+          }}
+        />
+      )}
     </div>
   );
 }
