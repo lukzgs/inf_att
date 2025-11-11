@@ -18,29 +18,51 @@ export const getLessonStatus = (lesson: any): LessonStatusType => {
   }
 
   // Verificar se a aula já passou (data + endTime < agora)
-  const now = new Date();
   try {
-    let lessonDate: Date;
-
-    // Extrair componentes da data (YYYY-MM-DD)
+    // Extrair data (YYYY-MM-DD)
+    let year: number, month: number, day: number;
+    
     if (lesson.date.includes('T')) {
-      // Se for ISO completo, extrair apenas a data
-      lessonDate = new Date(lesson.date.split('T')[0] + 'T00:00:00');
+      const dateObj = new Date(lesson.date);
+      year = dateObj.getUTCFullYear();
+      month = dateObj.getUTCMonth() + 1;
+      day = dateObj.getUTCDate();
     } else {
-      // Se for apenas YYYY-MM-DD, parsear manualmente para evitar UTC
-      const [year, month, day] = lesson.date.split('-').map(Number);
-      lessonDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+      [year, month, day] = lesson.date.split('-').map(Number);
     }
 
-    // Extrair horário de término
-    const endTimeStr = lesson.endTime?.includes('T')
-      ? lesson.endTime.split('T')[1].substring(0, 5)
-      : lesson.endTime || '00:00';
+    // Extrair horário de término com timezone correto
+    let endHour = 0, endMinute = 0;
+    
+    if (lesson.endTime) {
+      if (lesson.endTime.includes('T')) {
+        // Formato ISO: 1970-01-01THH:mm:ss.000Z
+        const date = new Date(lesson.endTime);
+        const timeStr = date.toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          timeZone: 'America/Sao_Paulo'
+        });
+        [endHour, endMinute] = timeStr.split(':').map(Number);
+      } else {
+        // Formato HH:mm
+        [endHour, endMinute] = lesson.endTime.split(':').map(Number);
+      }
+    }
 
-    const [hours, minutes] = endTimeStr.split(':').map(Number);
-    lessonDate.setHours(hours, minutes, 0, 0);
+    // Obter hora atual em Brasília
+    const nowInSaoPaulo = new Date().toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo'
+    });
+    const now = new Date(nowInSaoPaulo);
 
-    const isPast = lessonDate < now;
+    // Criar data/hora da aula (fim) também em Brasília
+    // Usar a mesma lógica: converter para string locale e depois para Date
+    const lessonDateStr = `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+    const lessonEndTime = new Date(lessonDateStr);
+
+    // Comparar com hora atual
+    const isPast = lessonEndTime < now;
 
     if (isPast || lesson.closedAt) {
       return 'completed';
