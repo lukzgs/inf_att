@@ -42,6 +42,7 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=inf_att_db
+      - PGTZ=America/Sao_Paulo
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
