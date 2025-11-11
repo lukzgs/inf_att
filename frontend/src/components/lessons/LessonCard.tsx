@@ -63,9 +63,15 @@ export function LessonCard({
   const formatTime = (timeStr: string) => {
     if (!timeStr) return '00:00';
     
-    // Se for ISO datetime (1970-01-01THH:mm:ss.000Z), extrai HH:mm
+    // Se for ISO datetime (1970-01-01THH:mm:ss.000Z), extrai HH:mm diretamente
+    // (já está em Brasília, sem necessidade de conversão)
     if (timeStr.includes('T')) {
-      return timeStr.split('T')[1].substring(0, 5);
+      const date = new Date(timeStr);
+      return date.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+      });
     }
     
     // Se já for HH:mm, retorna como está
@@ -110,7 +116,7 @@ export function LessonCard({
         day = d;
       }
       
-      // Criar timestamps para início e término usando componentes extraídos localmente
+      // Criar timestamps para início e término usando horários em Brasília
       const [startHours, startMinutes] = startTimeStr.split(':').map(Number);
       const [endHours, endMinutes] = endTimeStr.split(':').map(Number);
       
