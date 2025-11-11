@@ -12,6 +12,7 @@ import { filterLessonsByStatus } from '@/utils/lessonStatus';
 import { useMultiSelect } from '@/hooks/useMultiSelect';
 import { BulkDeleteBar } from '@/components/lessons/BulkDeleteBar';
 import { BulkSelectHeader } from '@/components/lessons/BulkSelectHeader';
+import { compareLessonsByTime } from '@/utils/lessons/compareLessonsByTime';
 
 export default function ProfessorAulasPage() {
   const { data: classes, isLoading: isLoadingClasses } = useProfessorClasses();
@@ -55,8 +56,8 @@ export default function ProfessorAulasPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Filtrar aulas pelas turmas do professor
-  const professorLessons = useMemo(() => {
+  // Obter todas as aulas das turmas do professor (SEM FILTRO) para cálculo de numeração
+  const professorLessonsUnfiltered = useMemo(() => {
     if (!allLessons || !classes) return [];
     
     // Garantir que allLessons é um array
@@ -64,6 +65,19 @@ export default function ProfessorAulasPage() {
     
     const classIds = new Set(classes.map(c => c.id));
     let filtered = lessonsArray.filter(lesson => classIds.has(lesson.classId));
+    
+    // Se uma turma específica foi selecionada, filtrar por ela também
+    // para que a numeração seja consistente dentro da turma
+    if (selectedClassId) {
+      filtered = filtered.filter(lesson => lesson.classId === selectedClassId);
+    }
+    
+    return filtered;
+  }, [allLessons, classes, selectedClassId]);
+
+  // Filtrar aulas com base nos filtros selecionados (status, busca)
+  const professorLessons = useMemo(() => {
+    let filtered = [...professorLessonsUnfiltered];
     
     // Filtrar por status (agendadas/realizadas) usando função utilitária
     filtered = filterLessonsByStatus(filtered, filterStatus);
@@ -82,54 +96,10 @@ export default function ProfessorAulasPage() {
       });
     }
     
-    // Filtrar por turma selecionada
-    if (selectedClassId) {
-      filtered = filtered.filter(lesson => lesson.classId === selectedClassId);
-    }
-    
-    // Ordenar por data com lógica especial por status
-    return filtered.sort((a, b) => {
-      // Extrair data e hora com tratamento correto de timezone
-      const dateA = new Date(a.date);
-      const yearA = dateA.getUTCFullYear();
-      const monthA = dateA.getUTCMonth();
-      const dayA = dateA.getUTCDate();
-      
-      // Extrair hora de forma segura
-      const startTimeA = a.startTime?.includes('T')
-        ? a.startTime.split('T')[1].substring(0, 5)
-        : a.startTime || '00:00';
-      const [hourA, minA] = startTimeA.split(':').map(Number);
-      const dateTimeA = new Date(yearA, monthA, dayA, hourA, minA, 0, 0);
-      
-      const dateB = new Date(b.date);
-      const yearB = dateB.getUTCFullYear();
-      const monthB = dateB.getUTCMonth();
-      const dayB = dateB.getUTCDate();
-      
-      const startTimeB = b.startTime?.includes('T')
-        ? b.startTime.split('T')[1].substring(0, 5)
-        : b.startTime || '00:00';
-      const [hourB, minB] = startTimeB.split(':').map(Number);
-      const dateTimeB = new Date(yearB, monthB, dayB, hourB, minB, 0, 0);
-      
-      const timeA = dateTimeA.getTime();
-      const timeB = dateTimeB.getTime();
-      
-      // Para aulas agendadas, sempre mostrar as próximas primeiro (crescente)
-      if (filterStatus === 'scheduled') {
-        return timeA - timeB;
-      }
-      
-      // Para aulas realizadas, sempre mostrar as mais recentes primeiro (decrescente)
-      if (filterStatus === 'completed') {
-        return timeB - timeA;
-      }
-      
-      // Para "todas", ordem cronológica (crescente - mais antiga primeiro)
-      return timeA - timeB;
-    });
-  }, [allLessons, classes, selectedClassId, debouncedSearchTerm, filterStatus]);
+    // Ordenar por data - ordem cronológica (crescente - mais antiga primeiro)
+    // A ordenação é consistente independente do filtro selecionado
+    return filtered.sort((a, b) => compareLessonsByTime(a, b, true));
+  }, [professorLessonsUnfiltered, debouncedSearchTerm, filterStatus]);
 
   // Sincronizar professorLessons com multiSelect quando mudar
   useEffect(() => {
@@ -368,7 +338,7 @@ export default function ProfessorAulasPage() {
                   isSelected={multiSelect.isSelected(lesson.id)}
                   onToggleSelect={multiSelect.toggleItem}
                   showSelectCheckbox={showSelectMode}
-                  allLessons={professorLessons}
+                  allLessons={professorLessonsUnfiltered}
                   showSubjectInfo={true}
                 />
               );
