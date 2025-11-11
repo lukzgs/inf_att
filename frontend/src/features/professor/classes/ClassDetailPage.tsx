@@ -8,11 +8,14 @@ import {
   FiSearch,
   FiX,
   FiAward,
+  FiHash,
+  FiEdit2,
 } from 'react-icons/fi';
 import { useClass } from '@/hooks/useClasses';
 import { useProfessorStudentAttendance } from '@/hooks/useUsers';
 import { LessonDetailModal } from '@/components/professor/LessonDetailModal';
 import { CreateLessonModal } from '@/components/professor/CreateLessonModal';
+import { EditEnrollmentPasswordModal } from '@/components/professor/EditEnrollmentPasswordModal';
 import { LessonCard } from '@/components/lessons/LessonCard';
 import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
 import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
@@ -73,7 +76,9 @@ export default function ClassDetailPage() {
 
   const [lessonFilter, setLessonFilter] = useState<FilterType>('all');
   const [showStudents, setShowStudents] = useState(false);
+  const [showClassData, setShowClassData] = useState(false);
   const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false);
+  const [isEditEnrollmentPasswordModalOpen, setIsEditEnrollmentPasswordModalOpen] = useState(false);
   
   const [lessonDetailModalData, setLessonDetailModalData] = useState<{
     lessonId: number;
@@ -150,11 +155,6 @@ export default function ClassDetailPage() {
   studentsWithStats.sort((a, b) => 
     (a.user?.name || '').localeCompare(b.user?.name || '')
   );
-
-  // Calculate class average frequency
-  const avgFrequency = studentsWithStats.length > 0
-    ? studentsWithStats.reduce((sum, s) => sum + s.attendancePercentage, 0) / studentsWithStats.length
-    : 0;
 
   // Filter lessons using the lessonStatus utility
   const filteredLessons = filterLessonsByStatus(lessonsData || [], lessonFilter);
@@ -316,6 +316,54 @@ export default function ClassDetailPage() {
         onBack={() => window.history.back()}
       />
 
+      {/* Dados da Turma - Collapsible */}
+      <section className="mt-8">
+        <div className="bg-white dark:bg-base-100 rounded-2xl shadow-md border border-gray-200 dark:border-base-300">
+          <div 
+            className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-base-200/50 transition-colors border-b border-gray-100 dark:border-base-300"
+            onClick={() => setShowClassData(!showClassData)}
+          >
+            <div className="flex-1">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mb-0 border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
+                Dados da Turma
+              </h2>
+            </div>
+            <div className={`transition-transform duration-300 flex-shrink-0 ml-4 ${showClassData ? 'rotate-180' : ''}`}>
+              <svg className="w-6 h-6 text-gray-600 dark:text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          {showClassData && (
+            <div className="p-6">
+              {/* Enrollment Password Field */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-base-200/50 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors border border-gray-200 dark:border-base-300">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <FiHash className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                      Número de Matrícula
+                    </p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                      {classData.enrollmentPassword}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsEditEnrollmentPasswordModalOpen(true)}
+                  className="btn btn-ghost btn-sm ml-4"
+                >
+                  <FiEdit2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Lessons Section */}
       <section className="mt-8">
         <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300">
@@ -409,7 +457,7 @@ export default function ClassDetailPage() {
                 Alunos Matriculados
               </h2>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {students.length} aluno{students.length !== 1 ? 's' : ''} • Frequência média: {avgFrequency.toFixed(1)}%
+                {students.length} aluno{students.length !== 1 ? 's' : ''}
               </p>
             </div>
             <div className={`transition-transform duration-300 flex-shrink-0 ml-4 ${showStudents ? 'rotate-180' : ''}`}>
@@ -566,6 +614,17 @@ export default function ClassDetailPage() {
             isLoading: false,
           })
         }
+      />
+
+      {/* Edit Enrollment Password Modal */}
+      <EditEnrollmentPasswordModal
+        isOpen={isEditEnrollmentPasswordModalOpen}
+        classId={classId}
+        currentPassword={classData.enrollmentPassword}
+        onClose={() => setIsEditEnrollmentPasswordModalOpen(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['class', classId] });
+        }}
       />
     </div>
   );
