@@ -1,9 +1,36 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiClock, FiCalendar, FiCheck, FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FiX, FiCalendar, FiCheck, FiAlertCircle, FiLoader } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { formatDateBR } from '@/utils/format';
 import { api } from '@/services/api';
 import { useQueryClient } from '@tanstack/react-query';
+
+/**
+ * Formata hora para exibição usando o timezone de Brasília
+ * Mesma lógica usada em LessonCard.tsx
+ */
+const formatTime = (timeStr: string) => {
+  if (!timeStr) return '00:00';
+  
+  // Se for ISO datetime (1970-01-01THH:mm:ss.000Z), extrai HH:mm diretamente
+  // (já está em Brasília, sem necessidade de conversão)
+  if (timeStr.includes('T')) {
+    const date = new Date(timeStr);
+    return date.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'America/Sao_Paulo'
+    });
+  }
+  
+  // Se já for HH:mm, retorna como está
+  if (timeStr.length === 5 && timeStr.includes(':')) {
+    return timeStr;
+  }
+  
+  // Fallback
+  return timeStr.substring(0, 5);
+};
 
 /**
  * Props do LessonAttendanceModal
@@ -80,8 +107,42 @@ export function LessonAttendanceModal({
   const [isLoading, setIsLoading] = useState(false);
   const [passwordFormat, setPasswordFormat] = useState('');
 
-  // Verificar se já foi marcada presença
-  const hasAttendance = lesson.attendances?.some(a => a.userId === userId && a.isPresent);
+  // Verificar presença do aluno na aula ao abrir o modal
+  useEffect(() => {
+    if (!isOpen || !userId || !lesson.id) {
+      return;
+    }
+
+    const checkAttendance = async () => {
+      try {
+        console.log(`🔍 [LessonAttendanceModal] Verificando presença: userId=${userId}, lessonId=${lesson.id}`);
+        const response = await api.get(`/presencas?userId=${userId}&lessonId=${lesson.id}`);
+        console.log(`📋 [LessonAttendanceModal] Resposta do servidor:`, response.data);
+        
+        // Se retornar array com algum item, significa que existe presença
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          const attendance = response.data[0];
+          console.log(`📌 [LessonAttendanceModal] Presença encontrada: isPresent=${attendance.isPresent}`);
+          
+          // Se já marcou como PRESENTE, mostra "Já Marcada"
+          if (attendance.isPresent === true) {
+            setModalState('already_marked');
+          } else {
+            // Se marcado como AUSENTE, permite que marque como presente
+            setModalState('initial');
+          }
+        } else {
+          // Nenhuma presença encontrada - permite marcar
+          setModalState('initial');
+        }
+      } catch (error: any) {
+        console.error(`❌ [LessonAttendanceModal] Erro ao verificar presença:`, error.response?.data || error.message);
+        setModalState('initial');
+      }
+    };
+
+    checkAttendance();
+  }, [isOpen, userId, lesson.id]);
 
   // Verificar se está no horário da aula (ou até 30 min após o término)
   const isWithinLessonTime = () => {
@@ -102,16 +163,12 @@ export function LessonAttendanceModal({
       day = d;
     }
     
-    // Extrair horários
-    const extractTime = (timeStr: string) => {
-      if (timeStr.includes('T')) {
-        return timeStr.split('T')[1].substring(0, 5);
-      }
-      return timeStr.substring(0, 5);
-    };
+    // Extrair horários usando a função formatTime
+    const startTimeStr = formatTime(lesson.startTime);
+    const endTimeStr = formatTime(lesson.endTime);
     
-    const [startHours, startMinutes] = extractTime(lesson.startTime).split(':').map(Number);
-    const [endHours, endMinutes] = extractTime(lesson.endTime).split(':').map(Number);
+    const [startHours, startMinutes] = startTimeStr.split(':').map(Number);
+    const [endHours, endMinutes] = endTimeStr.split(':').map(Number);
     
     const startDateTime = new Date(year, month, day, startHours, startMinutes, 0, 0);
     const endDateTime = new Date(year, month, day, endHours, endMinutes, 0, 0);
@@ -150,11 +207,6 @@ export function LessonAttendanceModal({
 
   // Marcar presença (sem código necessário)
   const handleMarkAttendance = async () => {
-    if (hasAttendance) {
-      setModalState('already_marked');
-      return;
-    }
-
     if (!isAvailable) {
       setErrorMessage('Você está fora do horário da aula');
       return;
@@ -164,12 +216,35 @@ export function LessonAttendanceModal({
     setModalState('validating');
 
     try {
-      // Registrar presença sem validação de código
-      await api.post(`/presencas`, {
-        lessonId: lesson.id,
-        userId: userId,
-        isPresent: true,
-      });
+      // ⚠️ VERIFICAÇÃO FINAL: Confere se presença já não foi criada como PRESENTE
+      // (pode ter sido criada em outra aba/dispositivo)
+      const checkResponse = await api.get(`/presencas?userId=${userId}&lessonId=${lesson.id}`);
+      const attendanceExists = Array.isArray(checkResponse.data) && checkResponse.data.length > 0 ? checkResponse.data[0] : null;
+      
+      // Se já marcou como PRESENTE, bloqueia
+      if (attendanceExists && attendanceExists.isPresent === true) {
+        setModalState('already_marked');
+        setIsLoading(false);
+        return;
+      }
+
+      // Se existe como AUSENTE, EDITA para PRESENTE
+      // Se não existe, CRIA como PRESENTE
+      if (attendanceExists && attendanceExists.isPresent === false) {
+        console.log(`📝 [LessonAttendanceModal] Editando presença de ausente para presente`);
+        // EDITAR usando PATCH
+        await api.patch(`/presencas/${lesson.id}/${userId}`, {
+          isPresent: true,
+        });
+      } else {
+        console.log(`➕ [LessonAttendanceModal] Criando nova presença`);
+        // CRIAR usando POST
+        await api.post(`/presencas`, {
+          lessonId: lesson.id,
+          userId: userId,
+          isPresent: true,
+        });
+      }
 
       setModalState('success');
       toast.success('Presença marcada com sucesso!');
@@ -206,11 +281,6 @@ export function LessonAttendanceModal({
       return;
     }
 
-    if (hasAttendance) {
-      setModalState('already_marked');
-      return;
-    }
-
     if (!isAvailable) {
       setErrorMessage('Você está fora do horário da aula');
       return;
@@ -220,13 +290,36 @@ export function LessonAttendanceModal({
     setModalState('validating');
 
     try {
-      // Registrar presença com código de validação
-      await api.post(`/presencas`, {
-        lessonId: lesson.id,
-        userId: userId,
-        isPresent: true,
-        attendancePassword: code,
-      });
+      // ⚠️ VERIFICAÇÃO FINAL: Confere se presença já não foi criada como PRESENTE
+      const checkResponse = await api.get(`/presencas?userId=${userId}&lessonId=${lesson.id}`);
+      const attendanceExists = Array.isArray(checkResponse.data) && checkResponse.data.length > 0 ? checkResponse.data[0] : null;
+      
+      // Se já marcou como PRESENTE, bloqueia
+      if (attendanceExists && attendanceExists.isPresent === true) {
+        setModalState('already_marked');
+        setIsLoading(false);
+        return;
+      }
+
+      // Se existe como AUSENTE, EDITA para PRESENTE
+      // Se não existe, CRIA como PRESENTE
+      if (attendanceExists && attendanceExists.isPresent === false) {
+        console.log(`📝 [LessonAttendanceModal] Editando presença de ausente para presente (com código)`);
+        // EDITAR usando PATCH
+        await api.patch(`/presencas/${lesson.id}/${userId}`, {
+          isPresent: true,
+          attendancePassword: code,
+        });
+      } else {
+        console.log(`➕ [LessonAttendanceModal] Criando nova presença (com código)`);
+        // CRIAR usando POST
+        await api.post(`/presencas`, {
+          lessonId: lesson.id,
+          userId: userId,
+          isPresent: true,
+          attendancePassword: code,
+        });
+      }
 
       setModalState('success');
       toast.success('Presença marcada com sucesso!');
@@ -254,15 +347,14 @@ export function LessonAttendanceModal({
     }
   };
 
-  // Reset ao abrir/fechar
+  // Reset dos inputs quando modal é aberto (mas NÃO reseta modalState)
   useEffect(() => {
     if (isOpen) {
       setCode('');
       setPasswordFormat('');
-      setModalState(hasAttendance ? 'already_marked' : 'initial');
       setErrorMessage('');
     }
-  }, [isOpen, hasAttendance]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -276,89 +368,113 @@ export function LessonAttendanceModal({
       
       {/* Modal */}
       <div className="modal modal-open">
-        <div className="modal-box max-w-md relative z-50 bg-white dark:bg-base-100 rounded-2xl shadow-lg p-0 overflow-hidden">
-          {/* Header - Branco/Cinza Claro */}
-          {(modalState === 'initial' || modalState === 'asking-code') && (
-            <div className="border-b border-gray-100 dark:border-base-content/10 px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-base-200 flex items-center justify-center flex-shrink-0">
-                  <FiCalendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-lg text-gray-900 dark:text-white">
-                    {lesson.name || 'Registrar Presença'}
-                  </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {lesson.class?.code || 'Turma'}
-                  </p>
-                </div>
-              </div>
-              <button 
-                onClick={onClose}
-                disabled={isLoading}
-                className="btn btn-sm btn-ghost btn-circle text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200 disabled:opacity-50"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
+        <div className="modal-box max-w-2xl relative z-50 bg-white dark:bg-base-100 rounded-2xl shadow-2xl p-0 overflow-hidden">
+          {/* Header com Título e Data/Hora */}
+          <div className="border-b border-gray-200 dark:border-base-content/10 px-8 py-6 flex items-start justify-between">
+            <div>
+              <h2 className="font-bold text-2xl text-gray-900 dark:text-white">
+                Aula
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {formatDateBR(lesson.date)} • {formatTime(lesson.startTime)} - {formatTime(lesson.endTime)}
+              </p>
             </div>
-          )}
+            <button 
+              onClick={onClose}
+              disabled={isLoading}
+              className="btn btn-sm btn-ghost btn-circle text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200 disabled:opacity-50"
+            >
+              <FiX className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-8 space-y-8">
             {/* Estado: Inicial - Botão Marcar Presença */}
             {modalState === 'initial' && (
-              <div className="space-y-6">
-                {/* Info da Aula */}
-                <div className="space-y-3 pb-4 border-b border-gray-100 dark:border-base-content/10">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FiCalendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Data:</span>
-                    </div>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {formatDateBR(lesson.date)}
-                    </span>
+              <div className="space-y-8">
+                {/* Seção: Informações da Aula */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiCalendar className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                      Informações da Aula
+                    </h3>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FiClock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Horário:</span>
+                  
+                  <div className="bg-gray-50 dark:bg-base-200/50 border border-gray-200 dark:border-base-content/10 rounded-xl p-6 space-y-4">
+                    {/* Data */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        Data
+                      </label>
+                      <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                        {formatDateBR(lesson.date)}
+                      </p>
                     </div>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {lesson.startTime.substring(11, 16)} - {lesson.endTime.substring(11, 16)}
-                    </span>
+
+                    {/* Horário */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Início
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {formatTime(lesson.startTime)}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Término
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {formatTime(lesson.endTime)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Turma/Subject */}
+                    {lesson.class?.code && (
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Turma
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {lesson.class.code}
+                          {lesson.class?.subject?.name && ` - ${lesson.class.subject.name}`}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Mensagem de Disponibilidade */}
+                {/* Mensagem de Disponibilidade ou Botão */}
                 {!isAvailable && (
-                  <div className="bg-gray-50 dark:bg-base-200 border border-gray-200 dark:border-base-content/20 rounded-lg p-4 flex items-start gap-3">
-                    <FiAlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+                  <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl p-5 flex items-start gap-4">
+                    <FiAlertCircle className="w-6 h-6 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">Fora do horário da aula</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        A presença só pode ser marcada durante o horário da aula.
+                      <p className="font-bold text-red-900 dark:text-red-400">Fora do Horário da Aula</p>
+                      <p className="text-sm text-red-800 dark:text-red-300/80 mt-1">
+                        A presença só pode ser marcada durante a aula ou até 30 minutos após o término.
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Botão Marcar Presença */}
                 {isAvailable && (
                   <button
                     onClick={handleMarkAttendance}
                     disabled={isLoading}
-                    className="btn w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="btn w-full py-3 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base h-auto"
                   >
                     {isLoading ? (
                       <>
-                        <FiLoader className="w-4 h-4 animate-spin" />
+                        <FiLoader className="w-5 h-5 animate-spin" />
                         Processando...
                       </>
                     ) : (
                       <>
-                        <FiCheck className="w-4 h-4" />
+                        <FiCheck className="w-5 h-5" />
                         Marcar Presença
                       </>
                     )}
@@ -369,36 +485,67 @@ export function LessonAttendanceModal({
 
             {/* Estado: Pedindo Código */}
             {modalState === 'asking-code' && (
-              <div className="space-y-6">
-                {/* Info da Aula */}
-                <div className="space-y-3 pb-4 border-b border-gray-100 dark:border-base-content/10">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FiCalendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Data:</span>
-                    </div>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {formatDateBR(lesson.date)}
-                    </span>
+              <div className="space-y-8">
+                {/* Seção: Informações da Aula */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FiCalendar className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                      Informações da Aula
+                    </h3>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FiClock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Horário:</span>
+                  
+                  <div className="bg-gray-50 dark:bg-base-200/50 border border-gray-200 dark:border-base-content/10 rounded-xl p-6 space-y-4">
+                    {/* Data */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        Data
+                      </label>
+                      <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                        {formatDateBR(lesson.date)}
+                      </p>
                     </div>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {lesson.startTime.substring(11, 16)} - {lesson.endTime.substring(11, 16)}
-                    </span>
+
+                    {/* Horário */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Início
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {formatTime(lesson.startTime)}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Término
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {formatTime(lesson.endTime)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Turma/Subject */}
+                    {lesson.class?.code && (
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                          Turma
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                          {lesson.class.code}
+                          {lesson.class?.subject?.name && ` - ${lesson.class.subject.name}`}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Form de Código */}
-                <form onSubmit={handleSubmitCode} className="space-y-5">
-                  {/* Input do Código */}
+                {/* Seção: Código de Presença */}
+                <form onSubmit={handleSubmitCode} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      Código de Presença
+                    <label className="text-sm font-bold text-gray-900 dark:text-white block mb-3">
+                      Digite o Código de Presença
                     </label>
                     <input
                       type="text"
@@ -408,11 +555,12 @@ export function LessonAttendanceModal({
                       onChange={handleCodeChange}
                       maxLength={7}
                       disabled={isLoading}
-                      className="input input-bordered w-full bg-white dark:bg-base-200 text-center text-3xl font-mono tracking-widest font-bold text-gray-900 dark:text-white border-gray-300 dark:border-base-content/20 disabled:opacity-50"
+                      className="input input-bordered w-full bg-white dark:bg-base-200 text-center text-5xl font-mono tracking-widest font-bold text-gray-900 dark:text-white border-2 border-gray-300 dark:border-base-content/20 focus:border-primary dark:focus:border-primary disabled:opacity-50 py-6 h-auto"
+                      autoFocus
                     />
                     {errorMessage && (
-                      <p className="text-sm text-red-600 dark:text-red-500 mt-2 flex items-center gap-1">
-                        <FiAlertCircle className="w-4 h-4" />
+                      <p className="text-sm text-red-600 dark:text-red-500 mt-3 flex items-center gap-2">
+                        <FiAlertCircle className="w-4 h-4 flex-shrink-0" />
                         {errorMessage}
                       </p>
                     )}
@@ -422,16 +570,16 @@ export function LessonAttendanceModal({
                   <button
                     type="submit"
                     disabled={isLoading || code.length !== 6}
-                    className="btn w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="btn w-full py-3 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base h-auto"
                   >
                     {isLoading ? (
                       <>
-                        <FiLoader className="w-4 h-4 animate-spin" />
+                        <FiLoader className="w-5 h-5 animate-spin" />
                         Validando...
                       </>
                     ) : (
                       <>
-                        <FiCheck className="w-4 h-4" />
+                        <FiCheck className="w-5 h-5" />
                         Confirmar Presença
                       </>
                     )}
@@ -442,69 +590,81 @@ export function LessonAttendanceModal({
 
             {/* Estado: Já Marcada */}
             {modalState === 'already_marked' && (
-              <div className="text-center space-y-4 py-8">
-                <div className="flex justify-center">
-                  <FiCheck className="w-12 h-12 text-gray-900 dark:text-white" />
+              <div className="py-12">
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
+                      <FiCheck className="w-8 h-8 text-green-600 dark:text-green-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-900 dark:text-white">
+                      Presença Já Marcada
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                      Você já registrou presença nesta aula.
+                    </p>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="btn btn-ghost w-full font-semibold"
+                  >
+                    Fechar
+                  </button>
                 </div>
-                <div>
-                  <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                    Presença Já Marcada
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    Você já registrou presença nesta aula.
-                  </p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="btn btn-ghost w-full"
-                >
-                  Fechar
-                </button>
               </div>
             )}
 
             {/* Estado: Sucesso */}
             {modalState === 'success' && (
-              <div className="text-center space-y-4 py-8">
-                <div className="flex justify-center">
-                  <FiCheck className="w-12 h-12 text-gray-900 dark:text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                    Presença Marcada!
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    Sua presença foi registrada com sucesso.
-                  </p>
+              <div className="py-12">
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
+                      <FiCheck className="w-8 h-8 text-green-600 dark:text-green-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-900 dark:text-white">
+                      Presença Marcada!
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                      Sua presença foi registrada com sucesso.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Estado: Erro */}
             {modalState === 'error' && (
-              <div className="text-center space-y-4 py-6">
-                <div className="flex justify-center">
-                  <FiAlertCircle className="w-12 h-12 text-gray-900 dark:text-white" />
+              <div className="py-8">
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
+                      <FiAlertCircle className="w-8 h-8 text-red-600 dark:text-red-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-900 dark:text-white">
+                      Erro ao Validar
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                      {errorMessage}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setModalState('initial');
+                      setErrorMessage('');
+                      setCode('');
+                      setPasswordFormat('');
+                    }}
+                    className="btn w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 font-semibold"
+                  >
+                    Tentar Novamente
+                  </button>
                 </div>
-                <div>
-                  <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                    Erro ao Validar
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    {errorMessage}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setModalState('initial');
-                    setErrorMessage('');
-                    setCode('');
-                    setPasswordFormat('');
-                  }}
-                  className="btn w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-white border-0 font-semibold"
-                >
-                  Tentar Novamente
-                </button>
               </div>
             )}
           </div>
