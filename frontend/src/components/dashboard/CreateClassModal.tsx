@@ -18,6 +18,7 @@ const createClassSchema = z.object({
     { message: 'Selecione um semestre' }
   ),
   location: z.string().optional(),
+  enrollmentPassword: z.string().min(3, 'Senha deve ter pelo menos 3 caracteres'),
 });
 
 type CreateClassFormData = z.infer<typeof createClassSchema>;
@@ -270,6 +271,28 @@ export function CreateClassModal({ isOpen, onClose }: CreateClassModalProps) {
                     placeholder="Ex: 201, Lab 3, Online"
                     className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
                   />
+                </div>
+
+                {/* Senha de Enrollment Field */}
+                <div className="form-control bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-900/40">
+                  <label className="label">
+                    <span className="label-text font-medium text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <FiHash className="w-4 h-4" />
+                      Senha de Acesso à Turma
+                    </span>
+                    <span className="label-text-alt text-xs text-gray-500 dark:text-gray-400">Alunos usarão para entrar</span>
+                  </label>
+                  <input
+                    {...register('enrollmentPassword')}
+                    type="text"
+                    placeholder="Ex: 123456"
+                    className="input input-bordered w-full bg-white dark:bg-base-100 text-gray-900 dark:text-white border-gray-200 dark:border-base-content/20 focus:border-primary transition-all text-sm h-10 rounded-lg"
+                  />
+                  {errors.enrollmentPassword && (
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">
+                      {errors.enrollmentPassword.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Botões */}
