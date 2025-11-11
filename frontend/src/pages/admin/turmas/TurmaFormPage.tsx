@@ -15,6 +15,7 @@ interface ClassFormData {
   year: number;
   semester: number;
   subjectId: number;
+  enrollmentPassword?: string;
 }
 
 interface UserClassItem {
@@ -55,6 +56,7 @@ export default function TurmaFormPage() {
       year: new Date().getFullYear(),
       semester: 1,
       subjectId: 0,
+      enrollmentPassword: '',
     },
   });
 
@@ -66,6 +68,7 @@ export default function TurmaFormPage() {
         year: classData.year,
         semester: classData.semester,
         subjectId: classData.subjectId,
+        enrollmentPassword: classData.enrollmentPassword || '',
       });
       
       // Preencher usuários da turma
@@ -327,6 +330,33 @@ export default function TurmaFormPage() {
                   </label>
                 )}
               </div>
+            </div>
+
+            {/* Senha de Enrollment */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">
+                  <FiHash className="inline w-4 h-4 mr-1" />
+                  Senha de Acesso à Turma
+                </span>
+                <span className="label-text-alt">Alunos usarão essa senha para entrar na turma</span>
+              </label>
+              <input
+                type="text"
+                placeholder="ex: 123456"
+                className={`input input-bordered ${errors.enrollmentPassword ? 'input-error' : ''}`}
+                {...register('enrollmentPassword', {
+                  required: 'Senha de acesso é obrigatória',
+                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                })}
+              />
+              {errors.enrollmentPassword && (
+                <label className="label">
+                  <span className="label-text-alt text-error">
+                    {errors.enrollmentPassword.message}
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 
