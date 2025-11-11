@@ -23,6 +23,8 @@ export interface Class {
   year: number;
   semester: number;
   subjectId: number;
+  location?: string;
+  enrollmentPassword?: string;
   subject?: {
     id: number;
     code: string;

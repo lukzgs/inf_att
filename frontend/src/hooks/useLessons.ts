@@ -57,9 +57,15 @@ const fetchLessons = async (): Promise<Lesson[]> => {
   return response.data;
 };
 
-// Função para buscar aulas de uma turma específica
+// Função para buscar aulas de uma turma específica (por endpoint turma)
 const fetchLessonsByClass = async (classId: number): Promise<Lesson[]> => {
   const response = await api.get<Lesson[]>(`/turmas/${classId}/aulas`);
+  return response.data;
+};
+
+// Função para buscar aulas de uma turma específica (por endpoint aulas)
+const fetchClassLessons = async (classId: number): Promise<Lesson[]> => {
+  const response = await api.get<Lesson[]>(`/aulas/turma/${classId}`);
   return response.data;
 };
 
@@ -82,6 +88,15 @@ export const useLessonsByClass = (classId?: number) => {
   return useQuery<Lesson[], Error>({
     queryKey: ['lessons', 'class', classId],
     queryFn: () => fetchLessonsByClass(classId!),
+    enabled: !!classId && classId > 0,
+  });
+};
+
+// Hook para buscar aulas de uma turma específica (usando endpoint aulas/turma)
+export const useClassLessons = (classId?: number) => {
+  return useQuery<Lesson[], Error>({
+    queryKey: ['aulas', 'turma', classId],
+    queryFn: () => fetchClassLessons(classId!),
     enabled: !!classId && classId > 0,
   });
 };
