@@ -31,6 +31,7 @@ const CoursePage = lazy(() => import('./pages/CoursePage'));
 // Usuário (Student) pages
 const SubjectDetailPage = lazy(() => import('./features/usuarios/subjects/SubjectDetailPage'));
 const UsuarioTurmasPage = lazy(() => import('./features/usuarios/turmas/TurmasPage'));
+const ClassLessonsPage = lazy(() => import('./features/usuarios/turmas/ClassLessonsPage'));
 const UsuarioAulasPage = lazy(() => import('./features/usuarios/aulas/AulasPage'));
 const AlunoDetailPage = lazy(() => import('./pages/professor/alunos/AlunoDetailPage'));
 
@@ -144,6 +145,11 @@ function App() {
             <Route path="usuario/turmas" element={
               <Suspense fallback={<LoadingPage />}>
                 <UsuarioTurmasPage />
+              </Suspense>
+            } />
+            <Route path="usuario/turmas/:id/aulas" element={
+              <Suspense fallback={<LoadingPage />}>
+                <ClassLessonsPage />
               </Suspense>
             } />
             <Route path="usuario/aulas" element={
