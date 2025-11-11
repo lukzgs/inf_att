@@ -23,7 +23,7 @@ const extractTimeFromISO = (isoTime: string): string => {
     return date.toLocaleTimeString('pt-BR', { 
       hour: '2-digit', 
       minute: '2-digit',
-      timeZone: 'UTC' // Importante: usa UTC porque 1970-01-01 é apenas container
+      timeZone: 'America/Sao_Paulo'
     });
   } catch {
     return '--:--';
@@ -127,9 +127,14 @@ export function LessonDetailModal({
       };
 
       const formatTimeToISO = (date: Date): string => {
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `1970-01-01T${hours}:${minutes}:00.000Z`;
+        // Extrair hora local do browser em Brasília
+        const timeString = date.toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: false 
+        });
+        return `1970-01-01T${timeString}.000Z`;
       };
       
       const payload: any = {};
