@@ -4,6 +4,12 @@ import { FiHome, FiBookOpen, FiLogOut, FiUsers, FiMenu, FiX, FiBarChart2, FiChev
 import { useState } from 'react';
 import { NotificationCenter } from '../components/notifications/NotificationCenter';
 
+// Função auxiliar para extrair primeiro nome
+const getFirstName = (fullName?: string): string => {
+  if (!fullName) return 'Usuário';
+  return fullName.split(' ')[0];
+};
+
 const NavItem = ({ to, icon, label, onClick, collapsed }: { 
   to: string; 
   icon: React.ReactElement; 
@@ -100,7 +106,7 @@ export default function MainLayout() {
               </div>
               {!isCollapsed && (
                 <div className="overflow-hidden flex-1">
-                  <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{user?.name || 'Usuário'}</p>
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{getFirstName(user?.name)}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{user?.email}</p>
                 </div>
               )}
@@ -127,7 +133,7 @@ export default function MainLayout() {
                 <span className="font-bold">{user?.name?.charAt(0).toUpperCase()}</span>
               </div>
               <div className="overflow-hidden flex-1">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{user?.name || 'Usuário'}</p>
+                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{getFirstName(user?.name)}</p>
                 <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{user?.email}</p>
               </div>
             </Link>
