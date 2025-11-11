@@ -7,6 +7,7 @@ import { LessonCard } from '@/components/lessons/LessonCard';
 import { LessonStatusFilter } from '@/components/lessons/LessonStatusFilter';
 import { LessonAttendanceModal } from './LessonAttendanceModal';
 import { filterLessonsByStatus } from '@/utils/lessonStatus';
+import { compareLessonsByTime } from '@/utils/lessons/compareLessonsByTime';
 
 /**
  * Página de Aulas do Aluno
@@ -43,8 +44,8 @@ export default function StudentAulasPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Filtrar aulas pelas turmas do aluno
-  const studentLessons = useMemo(() => {
+  // Obter todas as aulas das turmas do aluno (SEM FILTRO) para cálculo de numeração
+  const studentLessonsUnfiltered = useMemo(() => {
     if (!allLessons || !classes) return [];
     
     // Garantir que allLessons é um array
@@ -52,6 +53,19 @@ export default function StudentAulasPage() {
     
     const classIds = new Set(classes.map(c => c.id));
     let filtered = lessonsArray.filter(lesson => classIds.has(lesson.classId));
+    
+    // Se uma turma específica foi selecionada, filtrar por ela também
+    // para que a numeração seja consistente dentro da turma
+    if (selectedClassId) {
+      filtered = filtered.filter(lesson => lesson.classId === selectedClassId);
+    }
+    
+    return filtered;
+  }, [allLessons, classes, selectedClassId]);
+
+  // Filtrar aulas com base nos filtros selecionados (status, busca)
+  const studentLessons = useMemo(() => {
+    let filtered = [...studentLessonsUnfiltered];
     
     // Filtrar por status (agendadas/realizadas) usando função utilitária
     filtered = filterLessonsByStatus(filtered, filterStatus);
@@ -70,54 +84,10 @@ export default function StudentAulasPage() {
       });
     }
     
-    // Filtrar por turma selecionada
-    if (selectedClassId) {
-      filtered = filtered.filter(lesson => lesson.classId === selectedClassId);
-    }
-    
-    // Ordenar por data com lógica especial por status
-    return filtered.sort((a, b) => {
-      // Extrair data e hora com tratamento correto de timezone
-      const dateA = new Date(a.date);
-      const yearA = dateA.getUTCFullYear();
-      const monthA = dateA.getUTCMonth();
-      const dayA = dateA.getUTCDate();
-      
-      // Extrair hora de forma segura
-      const startTimeA = a.startTime?.includes('T')
-        ? a.startTime.split('T')[1].substring(0, 5)
-        : a.startTime || '00:00';
-      const [hourA, minA] = startTimeA.split(':').map(Number);
-      const dateTimeA = new Date(yearA, monthA, dayA, hourA, minA, 0, 0);
-      
-      const dateB = new Date(b.date);
-      const yearB = dateB.getUTCFullYear();
-      const monthB = dateB.getUTCMonth();
-      const dayB = dateB.getUTCDate();
-      
-      const startTimeB = b.startTime?.includes('T')
-        ? b.startTime.split('T')[1].substring(0, 5)
-        : b.startTime || '00:00';
-      const [hourB, minB] = startTimeB.split(':').map(Number);
-      const dateTimeB = new Date(yearB, monthB, dayB, hourB, minB, 0, 0);
-      
-      const timeA = dateTimeA.getTime();
-      const timeB = dateTimeB.getTime();
-      
-      // Para aulas agendadas, sempre mostrar as próximas primeiro (crescente)
-      if (filterStatus === 'scheduled') {
-        return timeA - timeB;
-      }
-      
-      // Para aulas realizadas, sempre mostrar as mais recentes primeiro (decrescente)
-      if (filterStatus === 'completed') {
-        return timeB - timeA;
-      }
-      
-      // Para "todas", ordem cronológica (crescente - mais antiga primeiro)
-      return timeA - timeB;
-    });
-  }, [allLessons, classes, selectedClassId, debouncedSearchTerm, filterStatus]);
+    // Ordenar por data - ordem cronológica (crescente - mais antiga primeiro)
+    // A ordenação é consistente independente do filtro selecionado
+    return filtered.sort((a, b) => compareLessonsByTime(a, b, true));
+  }, [studentLessonsUnfiltered, debouncedSearchTerm, filterStatus]);
 
   const isLoading = isLoadingClasses || isLoadingLessons;
 
@@ -200,10 +170,11 @@ export default function StudentAulasPage() {
 
       {/* Aulas Section */}
       <div className="bg-white dark:bg-base-100 rounded-2xl p-4 sm:p-6 shadow-md border border-gray-200 dark:border-base-300 mb-6 sm:mb-8">
+        <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Aulas
+        </h2>
+
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-base-content/10 pb-2 inline-block">
-            Aulas
-          </h2>
           <div className="flex gap-2 flex-wrap">
             {/* Filtro por Status */}
             <LessonStatusFilter 
@@ -218,13 +189,13 @@ export default function StudentAulasPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="skeleton-premium h-40 w-full" />
             ))}
           </div>
         ) : studentLessons.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {studentLessons.map((lesson) => (
               <div key={lesson.id} className="relative">
                 <LessonCard
@@ -235,7 +206,7 @@ export default function StudentAulasPage() {
                   }}
                   onEdit={undefined}
                   onDelete={undefined}
-                  allLessons={studentLessons}
+                  allLessons={studentLessonsUnfiltered}
                 />
               </div>
             ))}
