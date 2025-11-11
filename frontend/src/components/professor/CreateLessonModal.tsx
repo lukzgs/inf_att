@@ -74,30 +74,28 @@ interface CreateLessonModalProps {
 }
 
 const formatDateToISO = (date: Date): string => {
-  // Formata como ISO Date string (YYYY-MM-DDTHH:mm:ss.sssZ)
-  // Mas mantendo a data local, sem conversão de timezone
-  // Trata a data como se estivesse em UTC para não fazer conversão
+  // Formata a data local (Brasília) para ISO YYYY-MM-DD
+  // Sem timezone info, deixa o backend e banco decidirem
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   
-  const result = `${year}-${month}-${day}T00:00:00.000Z`;
-  console.log('📅 formatDateToISO:', {
-    input: date.toString(),
-    year,
-    month,
-    day,
-    output: result
-  });
-  return result;
+  return `${year}-${month}-${day}`;
 };
 
 const formatTimeToISO = (date: Date): string => {
-  // Para campos @db.Time do Prisma, precisa ser DateTime ISO-8601 completo
-  // Usa a data de 1970-01-01 como base (padrão para Time)
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `1970-01-01T${hours}:${minutes}:00.000Z`;
+  // O datepicker retorna Date em UTC internamente
+  // Precisamos extrair a hora que o USER VIU no datepicker (em Brasília)
+  // Usar toLocaleTimeString para pegar a hora local do browser
+  const timeString = date.toLocaleTimeString('pt-BR', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit',
+    hour12: false 
+  });
+  
+  // toLocaleTimeString retorna "HH:mm:ss" no formato local do browser
+  return timeString;
 };
 
 // Generate recurring lesson dates
