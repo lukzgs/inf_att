@@ -44,7 +44,7 @@ services:
       - POSTGRES_DB=inf_att_db
       - PGTZ=America/Sao_Paulo
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     ports:
       - "5433:5432"
 
